@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Bibliotecário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/bibliotecario.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="user-bar">
+            <span>Olá, <strong id="user-nome">Carregando...</strong> (Bibliotecário)</span>
+            <button onclick="fazerLogout()" class="btn-sair">Sair</button>
+        </div>
+
+        <div class="header"><h1>📚 Painel do Bibliotecário</h1></div>
+
+        <div class="dashboard">
+            <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
+            <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
+            <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('livros')">Acervo de Livros</button>
+            <button class="tab-btn" onclick="mudarAba('emprestimos')">Gerenciar Empréstimos</button>
+        </div>
+
+        <!-- ABA DE LIVROS -->
+        <div id="aba-livros" class="tab-content active">
+            <h2>Cadastrar Novo Livro</h2>
+            <form id="form-livro">
+                <input type="text" id="titulo" placeholder="Título do Livro" required>
+                <input type="text" id="autor" placeholder="Autor" required>
+                <select id="categoria">
+                    <option value="Didático">Didático</option>
+                    <option value="Ficção">Ficção</option>
+                    <option value="Biografia">Biografia</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Geral">Geral</option>
+                </select>
+                <button type="submit">Cadastrar Livro</button>
+            </form>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+            <h2>Livros Cadastrados</h2>
+            <table id="tabela-livros">
+                <thead><tr><th>Título</th><th>Autor</th><th>Categoria</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- ABA DE EMPRÉSTIMOS -->
+        <div id="aba-emprestimos" class="tab-content">
+            <h2>Registrar Empréstimo</h2>
+            <form id="form-emprestimo">
+                <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
+                <select id="select-livro" required><option value="">Selecione um livro disponível...</option></select>
+                <input type="date" id="data-devolucao" required>
+                <button type="submit" style="background-color: var(--primary);">Confirmar Empréstimo</button>
+            </form>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+            <h2>Todos os Empréstimos Ativos</h2>
+            <table id="tabela-emprestimos">
+                <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

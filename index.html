@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca Escolar</title>
+    <title>Login - Biblioteca Escolar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/script.js" defer></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js" defer></script>
 </head>
 <body>
-
-    <!-- TELA DE LOGIN / CADASTRO (Invisível por padrão) -->
-    <div id="tela-auth" class="container" style="display: none; max-width: 400px; margin-top: 50px;">
+    <div class="container" style="max-width: 400px; margin-top: 50px;">
         <div class="header">
             <h1>📚 Biblioteca Escolar</h1>
             <p style="color: var(--text-muted); margin-bottom: 20px;">Faça login para continuar</p>
@@ -40,108 +39,5 @@
             </form>
         </div>
     </div>
-
-    <!-- APLICAÇÃO PRINCIPAL (Invisível até logar) -->
-    <div id="app-principal" class="container" style="display: none;">
-        
-        <!-- Barra de Usuário -->
-        <div class="user-bar">
-            <span>Olá, <strong id="user-nome">Usuário</strong> (<span id="user-tipo">...</span>)</span>
-            <button onclick="fazerLogout()" class="btn-sair">Sair</button>
-        </div>
-
-        <div class="header">
-            <h1>📚 Painel da Biblioteca</h1>
-        </div>
-
-        <div class="dashboard">
-            <div class="card">
-                <h3>Total de Livros</h3>
-                <p id="total-livros">0</p>
-            </div>
-            <div class="card emprestados">
-                <h3>Emprestados</h3>
-                <p id="total-emprestados">0</p>
-            </div>
-            <div class="card atrasados">
-                <h3>Atrasados</h3>
-                <p id="total-atrasados">0</p>
-            </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('livros')">Acervo de Livros</button>
-            <!-- A aba de empréstimos só aparece para bibliotecários ou para o próprio aluno ver seus livros -->
-            <button class="tab-btn" onclick="mudarAba('emprestimos')">Meus Empréstimos</button>
-        </div>
-
-        <!-- ABA DE LIVROS -->
-        <div id="aba-livros" class="tab-content active">
-            <!-- Formulário só visível para bibliotecário -->
-            <div id="secao-cadastro-livro" style="display: none;">
-                <h2>Cadastrar Novo Livro</h2>
-                <form id="form-livro">
-                    <input type="text" id="titulo" placeholder="Título do Livro" required>
-                    <input type="text" id="autor" placeholder="Autor" required>
-                    <select id="categoria">
-                        <option value="Didático">Didático</option>
-                        <option value="Ficção">Ficção</option>
-                        <option value="Biografia">Biografia</option>
-                        <option value="Infantil">Infantil</option>
-                        <option value="Geral">Geral</option>
-                    </select>
-                    <button type="submit">Cadastrar Livro</button>
-                </form>
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            </div>
-
-            <h2>Livros Cadastrados</h2>
-            <table id="tabela-livros">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Autor</th>
-                        <th>Categoria</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <!-- ABA DE EMPRÉSTIMOS -->
-        <div id="aba-emprestimos" class="tab-content">
-            <!-- Formulário só visível para bibliotecário -->
-            <div id="secao-novo-emprestimo" style="display: none;">
-                <h2>Registrar Empréstimo</h2>
-                <form id="form-emprestimo">
-                    <select id="select-aluno" required>
-                        <option value="">Selecione o Aluno...</option>
-                    </select>
-                    <select id="select-livro" required>
-                        <option value="">Selecione um livro disponível...</option>
-                    </select>
-                    <input type="date" id="data-devolucao" required>
-                    <button type="submit" style="background-color: var(--primary);">Confirmar Empréstimo</button>
-                </form>
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            </div>
-
-            <h2 id="titulo-tabela-emprestimos">Empréstimos Ativos</h2>
-            <table id="tabela-emprestimos">
-                <thead>
-                    <tr>
-                        <th>Livro</th>
-                        <th>Aluno</th>
-                        <th>Devolução Prevista</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-
 </body>
 </html>
