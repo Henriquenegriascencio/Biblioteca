@@ -2,41 +2,135 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Escolar</title>
     <!-- Importa a biblioteca do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Estilos básicos para ficar bonito */
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        input { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .emprestado { color: red; font-weight: bold; }
+        .disponivel { color: green; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <h1>Gerenciamento da Biblioteca</h1>
-    <div id="status-conexao"></div>
+    <div class="container">
+        <h1>📚 Gerenciamento da Biblioteca</h1>
+        
+        <!-- Formulário de Cadastro -->
+        <h2>Cadastrar Novo Livro</h2>
+        <form id="form-livro">
+            <input type="text" id="titulo" placeholder="Título do Livro" required>
+            <input type="text" id="autor" placeholder="Autor" required>
+            <input type="text" id="isbn" placeholder="ISBN (opcional)">
+            <button type="submit">Cadastrar Livro</button>
+        </form>
+
+        <hr style="margin: 30px 0;">
+
+        <!-- Tabela de Livros -->
+        <h2>Livros na Biblioteca</h2>
+        <table id="tabela-livros">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- O JavaScript vai preencher esta tabela -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
-        // 1. Configure suas credenciais (substitua pelos seus valores)
-        const SUPABASE_URL = 'SUA_PROJECT_URL_AQUI';
-        const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
-
-        // 2. Inicialize o cliente Supabase
+        // 1. CONFIGURAÇÃO DO SUPABASE
+        const SUPABASE_URL = 'https://sysghgyhotgobvbvzjju.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Cliente Supabase inicializado.');
 
-        // 3. Exemplo: Buscar livros do banco de dados
-        async function listarLivros() {
-            const { data, error } = await supabase
-                .from('livros')
-                .select('*');
-
+        // 2. BUSCAR E LISTAR LIVROS
+        async function carregarLivros() {
+            const { data: livros, error } = await supabase.from('livros').select('*').order('id', { ascending: false });
+            
             if (error) {
-                console.error('Erro ao buscar livros:', error);
-                document.getElementById('status-conexao').innerText = 'Erro na conexão com o banco.';
+                console.error("Erro ao buscar livros:", error);
                 return;
             }
 
-            console.log('Livros encontrados:', data);
-            document.getElementById('status-conexao').innerText = `Conexão OK. ${data.length} livro(s) encontrado(s).`;
+            const tbody = document.querySelector('#tabela-livros tbody');
+            tbody.innerHTML = ''; // Limpa a tabela antes de adicionar os novos dados
+
+            livros.forEach(livro => {
+                const tr = document.createElement('tr');
+                
+                // Define a cor e o texto baseado na disponibilidade
+                const statusTexto = livro.disponivel ? 'Disponível' : 'Emprestado';
+                const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
+
+                tr.innerHTML = `
+                    <td>${livro.titulo}</td>
+                    <td>${livro.autor}</td>
+                    <td class="${statusClasse}">${statusTexto}</td>
+                    <td>
+                        <button onclick="alternarStatus(${livro.id}, ${livro.disponivel})" style="background-color: #ffc107; color: black;">
+                            ${livro.disponivel ? 'Emprestar' : 'Devolver'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        // Chama a função ao carregar a página
-        listarLivros();
+        // 3. CADASTRAR LIVRO
+        document.getElementById('form-livro').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Impede a página de recarregar
+
+            const titulo = document.getElementById('titulo').value;
+            const autor = document.getElementById('autor').value;
+            const isbn = document.getElementById('isbn').value;
+
+            const { data, error } = await supabase
+                .from('livros')
+                .insert([{ titulo: titulo, autor: autor, isbn: isbn }]);
+
+            if (error) {
+                alert("Erro ao cadastrar livro: " + error.message);
+            } else {
+                alert("Livro cadastrado com sucesso!");
+                document.getElementById('form-livro').reset(); // Limpa o formulário
+                carregarLivros(); // Atualiza a tabela na tela
+            }
+        });
+
+        // 4. ALTERAR STATUS (EMPRESTAR / DEVOLVER)
+        async function alternarStatus(id, statusAtual) {
+            const novoStatus = !statusAtual; // Inverte true/false
+            
+            const { error } = await supabase
+                .from('livros')
+                .update({ disponivel: novoStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao atualizar status.");
+            } else {
+                carregarLivros(); // Atualiza a tabela
+            }
+        }
+
+        // Inicializa a lista ao abrir a página
+        carregarLivros();
     </script>
 </body>
 </html>
