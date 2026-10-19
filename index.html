@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca Escolar</title>
+    <!-- Importa a biblioteca do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Gerenciamento da Biblioteca</h1>
+    <div id="status-conexao"></div>
+
+    <script>
+        // 1. Configure suas credenciais (substitua pelos seus valores)
+        const SUPABASE_URL = 'SUA_PROJECT_URL_AQUI';
+        const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
+
+        // 2. Inicialize o cliente Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Cliente Supabase inicializado.');
+
+        // 3. Exemplo: Buscar livros do banco de dados
+        async function listarLivros() {
+            const { data, error } = await supabase
+                .from('livros')
+                .select('*');
+
+            if (error) {
+                console.error('Erro ao buscar livros:', error);
+                document.getElementById('status-conexao').innerText = 'Erro na conexão com o banco.';
+                return;
+            }
+
+            console.log('Livros encontrados:', data);
+            document.getElementById('status-conexao').innerText = `Conexão OK. ${data.length} livro(s) encontrado(s).`;
+        }
+
+        // Chama a função ao carregar a página
+        listarLivros();
+    </script>
+</body>
+</html>
