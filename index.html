@@ -31,10 +31,18 @@
                 <input type="text" id="reg-nome" placeholder="Nome Completo" required>
                 <input type="email" id="reg-email" placeholder="E-mail" required>
                 <input type="password" id="reg-senha" placeholder="Senha (mín 6 caracteres)" required>
-                <select id="reg-tipo">
+                
+                <select id="reg-tipo" onchange="alternarCamposAluno()">
                     <option value="aluno">Sou Aluno</option>
                     <option value="bibliotecario">Sou Bibliotecário</option>
                 </select>
+
+                <!-- Campos que só aparecem para alunos -->
+                <div id="campos-aluno">
+                    <input type="text" id="reg-turma" placeholder="Sua Turma (ex: 1º Ano A)">
+                    <input type="text" id="reg-matricula" placeholder="Sua Matrícula (ex: 12345)">
+                </div>
+
                 <button type="submit" style="background-color: var(--success);">Cadastrar</button>
             </form>
         </div>

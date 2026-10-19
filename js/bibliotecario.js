@@ -52,10 +52,24 @@ document.getElementById('form-livro').addEventListener('submit', async (e) => {
 
 // --- ALUNOS E EMPRÉSTIMOS ---
 async function carregarAlunos() {
-    const { data: alunos } = await window.supabaseClient.from('perfis').select('*').eq('tipo_usuario', 'aluno');
+    // Traz todos os alunos ordenados por nome
+    const { data: alunos } = await window.supabaseClient
+        .from('perfis')
+        .select('*')
+        .eq('tipo_usuario', 'aluno')
+        .order('nome');
+
     const select = document.getElementById('select-aluno');
     select.innerHTML = '<option value="">Selecione o Aluno...</option>';
-    alunos.forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
+    
+    if (alunos) {
+        alunos.forEach(a => {
+            // Monta o texto: João Silva (1º Ano A) - Mat: 12345
+            const turmaTexto = a.turma ? ` - ${a.turma}` : '';
+            const matTexto = a.matricula ? ` - Mat: ${a.matricula}` : '';
+            select.innerHTML += `<option value="${a.id}">${a.nome}${turmaTexto}${matTexto}</option>`;
+        });
+    }
 }
 
 async function carregarEmprestimos() {
