@@ -321,3 +321,23 @@ tbody tr:hover {
         padding: 10px;
     }
 }
+/* Barra de usuário */
+.user-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    padding: 15px 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.btn-sair {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    padding: 8px 15px;
+    width: auto;
+}
+.btn-sair:hover { background-color: #FECACA; }
