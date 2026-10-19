@@ -4,44 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Escolar</title>
+    
+    <!-- Importa o CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Importa a biblioteca do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 20px; }
-        
-        /* Estilos do Dashboard */
-        .dashboard { display: flex; gap: 15px; margin-bottom: 20px; }
-        .card { flex: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #007bff; }
-        .card h3 { margin: 0 0 10px 0; font-size: 14px; color: #666; text-transform: uppercase; }
-        .card p { margin: 0; font-size: 24px; font-weight: bold; color: #333; }
-        .card.atrasados { border-top-color: #dc3545; }
-        .card.atrasados p { color: #dc3545; }
-        .card.emprestados { border-top-color: #ffc107; }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 15px; background: #e0e0e0; border: none; cursor: pointer; font-size: 16px; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .tab-btn.active { background: #007bff; color: white; }
-        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .tab-content.active { display: block; }
-        input, select { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.8; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #333; color: white; }
-        
-        .status-disponivel { color: green; font-weight: bold; }
-        .status-emprestado { color: #ffc107; font-weight: bold; }
-        
-        /* Estilo para Atraso */
-        .linha-atraso { background-color: #ffe6e6; }
-        .status-atraso { color: #dc3545; font-weight: bold; }
-        
-        .btn-emprestar { background-color: #ffc107; color: #000; }
-        .btn-devolver { background-color: #17a2b8; color: #fff; }
-        .btn-renovar { background-color: #6c757d; color: #fff; margin-left: 5px; }
-    </style>
+    
+    <!-- Importa o nosso JavaScript (o 'defer' faz ele rodar no momento certo) -->
+    <script src="js/script.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -49,7 +20,6 @@
             <h1>📚 Sistema da Biblioteca</h1>
         </div>
 
-        <!-- DASHBOARD -->
         <div class="dashboard">
             <div class="card">
                 <h3>Total de Livros</h3>
@@ -65,7 +35,6 @@
             </div>
         </div>
 
-        <!-- Abas de Navegação -->
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('livros')">Gerenciar Livros</button>
             <button class="tab-btn" onclick="mudarAba('emprestimos')">Empréstimos</button>
@@ -128,191 +97,5 @@
             </table>
         </div>
     </div>
-
-    <script>
-        // --- CONFIGURAÇÃO DO SUPABASE ---
-        const SUPABASE_URL = 'https://sysghgyhotgobvbvzjju.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- CONTROLE DE ABAS ---
-        function mudarAba(aba) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`aba-${aba}`).classList.add('active');
-            event.target.classList.add('active');
-
-            if (aba === 'livros') carregarLivros();
-            if (aba === 'emprestimos') carregarEmprestimos();
-        }
-
-        // --- 1. FUNÇÕES DE LIVROS ---
-        async function carregarLivros() {
-            const { data: livros, error } = await supabaseClient.from('livros').select('*').order('id', { ascending: false });
-            if (error) return console.error(error);
-
-            const tbody = document.querySelector('#tabela-livros tbody');
-            tbody.innerHTML = '';
-            
-            const selectLivro = document.getElementById('select-livro');
-            selectLivro.innerHTML = '<option value="">Selecione um livro disponível...</option>';
-
-            // Atualiza Dashboard
-            document.getElementById('total-livros').innerText = livros.length;
-
-            livros.forEach(livro => {
-                const statusTexto = livro.disponivel ? 'Disponível' : 'Emprestado';
-                const statusClasse = livro.disponivel ? 'status-disponivel' : 'status-emprestado';
-                const categoria = livro.categoria || 'Geral';
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${livro.titulo}</td>
-                        <td>${livro.autor}</td>
-                        <td>${categoria}</td>
-                        <td class="${statusClasse}">${statusTexto}</td>
-                    </tr>
-                `;
-
-                if (livro.disponivel) {
-                    selectLivro.innerHTML += `<option value="${livro.id}">${livro.titulo}</option>`;
-                }
-            });
-        }
-
-        document.getElementById('form-livro').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const titulo = document.getElementById('titulo').value;
-            const autor = document.getElementById('autor').value;
-            const categoria = document.getElementById('categoria').value;
-
-            const { error } = await supabaseClient.from('livros').insert([{ titulo, autor, categoria }]);
-
-            if (error) {
-                alert("Erro ao cadastrar: " + error.message);
-            } else {
-                document.getElementById('form-livro').reset();
-                carregarLivros();
-                alert("Livro cadastrado!");
-            }
-        });
-
-        // --- 2. FUNÇÕES DE EMPRÉSTIMOS E ATRASOS ---
-        async function carregarEmprestimos() {
-            const { data: emprestimos, error } = await supabaseClient
-                .from('emprestimos')
-                .select(`*, livros (titulo)`)
-                .eq('devolvido', false);
-
-            if (error) return console.error(error);
-
-            const tbody = document.querySelector('#tabela-emprestimos tbody');
-            tbody.innerHTML = '';
-            
-            let contadorAtrasados = 0;
-            document.getElementById('total-emprestados').innerText = emprestimos.length;
-
-            // Pega a data de hoje e zera as horas para comparar apenas o dia
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-
-            emprestimos.forEach(emp => {
-                // Converte a data do banco (AAAA-MM-DD) para um objeto Date seguro
-                const dataDev = new Date(emp.data_devolucao + 'T00:00:00');
-                const dataFormatada = dataDev.toLocaleDateString('pt-BR');
-                
-                let statusHtml = '<span style="color: green;">Em dia</span>';
-                let linhaClasse = '';
-                let btnRenovarHtml = '';
-
-                // Lógica de Atraso
-                if (dataDev < hoje) {
-                    const diffTime = Math.abs(hoje - dataDev);
-                    const diasAtraso = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    statusHtml = `<span class="status-atraso">Atrasado (${diasAtraso} dias)</span>`;
-                    linhaClasse = 'linha-atraso';
-                    contadorAtrasados++;
-                } else {
-                    // Se não estiver atrasado, pode renovar
-                    btnRenovarHtml = `<button class="btn-renovar" onclick="renovarEmprestimo(${emp.id}, '${emp.data_devolucao}')">+7 Dias</button>`;
-                }
-
-                tbody.innerHTML += `
-                    <tr class="${linhaClasse}">
-                        <td>${emp.livros.titulo}</td>
-                        <td>${emp.nome_aluno}</td>
-                        <td>${dataFormatada}</td>
-                        <td>${statusHtml}</td>
-                        <td>
-                            <button class="btn-devolver" onclick="devolverLivro(${emp.id}, ${emp.livro_id})">Devolver</button>
-                            ${btnRenovarHtml}
-                        </td>
-                    </tr>
-                `;
-            });
-
-            // Atualiza Dashboard de atrasados
-            document.getElementById('total-atrasados').innerText = contadorAtrasados;
-        }
-
-        document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const livro_id = document.getElementById('select-livro').value;
-            const nome_aluno = document.getElementById('nome-aluno').value;
-            const data_devolucao = document.getElementById('data-devolucao').value;
-
-            if(!livro_id) return alert("Selecione um livro!");
-
-            const { error: erroEmprestimo } = await supabaseClient
-                .from('emprestimos')
-                .insert([{ livro_id, nome_aluno, data_devolucao }]);
-
-            if (erroEmprestimo) return alert("Erro: " + erroEmprestimo.message);
-
-            await supabaseClient.from('livros').update({ disponivel: false }).eq('id', livro_id);
-
-            alert("Empréstimo registrado!");
-            document.getElementById('form-emprestimo').reset();
-            carregarEmprestimos();
-            carregarLivros(); 
-        });
-
-        async function devolverLivro(emprestimo_id, livro_id) {
-            if(!confirm("Confirmar devolução do livro?")) return;
-            
-            await supabaseClient.from('emprestimos').update({ devolvido: true }).eq('id', emprestimo_id);
-            await supabaseClient.from('livros').update({ disponivel: true }).eq('id', livro_id);
-
-            carregarEmprestimos();
-            carregarLivros(); 
-        }
-
-        async function renovarEmprestimo(emprestimo_id, dataAtualString) {
-            // Adiciona 7 dias à data atual do empréstimo
-            const dataAtual = new Date(dataAtualString + 'T00:00:00');
-            dataAtual.setDate(dataAtual.getDate() + 7);
-            
-            // Formata de volta para AAAA-MM-DD
-            const novaData = dataAtual.toISOString().split('T')[0];
-
-            const { error } = await supabaseClient
-                .from('emprestimos')
-                .update({ data_devolucao: novaData })
-                .eq('id', emprestimo_id);
-
-            if (error) {
-                alert("Erro ao renovar: " + error.message);
-            } else {
-                alert("Empréstimo renovado por mais 7 dias!");
-                carregarEmprestimos();
-            }
-        }
-
-        // Inicializa
-        carregarLivros();
-        // Já carrega os empréstimos em background para o Dashboard ficar certo
-        carregarEmprestimos(); 
-    </script>
 </body>
 </html>
