@@ -4,132 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Escolar</title>
-    <!-- Importa a biblioteca do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos básicos para ficar bonito */
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; }
-        input { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 15px; background: #e0e0e0; border: none; cursor: pointer; font-size: 16px; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: #007bff; color: white; }
+        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+        input, select { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background-color: #218838; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #007bff; color: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #333; color: white; }
         .emprestado { color: red; font-weight: bold; }
         .disponivel { color: green; font-weight: bold; }
+        .btn-emprestar { background-color: #ffc107; color: #000; }
+        .btn-devolver { background-color: #17a2b8; color: #fff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Gerenciamento da Biblioteca</h1>
-        
-        <!-- Formulário de Cadastro -->
-        <h2>Cadastrar Novo Livro</h2>
-        <form id="form-livro">
-            <input type="text" id="titulo" placeholder="Título do Livro" required>
-            <input type="text" id="autor" placeholder="Autor" required>
-            <input type="text" id="isbn" placeholder="ISBN (opcional)">
-            <button type="submit">Cadastrar Livro</button>
-        </form>
+        <div class="header">
+            <h1>📚 Sistema da Biblioteca</h1>
+        </div>
 
-        <hr style="margin: 30px 0;">
+        <!-- Abas de Navegação -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('livros')">Gerenciar Livros</button>
+            <button class="tab-btn" onclick="mudarAba('emprestimos')">Empréstimos</button>
+        </div>
 
-        <!-- Tabela de Livros -->
-        <h2>Livros na Biblioteca</h2>
-        <table id="tabela-livros">
-            <thead>
-                <tr>
-                    <th>Título</th>
-                    <th>Autor</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- O JavaScript vai preencher esta tabela -->
-            </tbody>
-        </table>
+        <!-- ABA DE LIVROS -->
+        <div id="aba-livros" class="tab-content active">
+            <h2>Cadastrar Novo Livro</h2>
+            <form id="form-livro">
+                <input type="text" id="titulo" placeholder="Título do Livro" required>
+                <input type="text" id="autor" placeholder="Autor" required>
+                <select id="categoria">
+                    <option value="Didático">Didático</option>
+                    <option value="Ficção">Ficção</option>
+                    <option value="Biografia">Biografia</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Geral">Geral</option>
+                </select>
+                <button type="submit">Cadastrar Livro</button>
+            </form>
+
+            <h2>Livros Cadastrados</h2>
+            <table id="tabela-livros">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Categoria</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- ABA DE EMPRÉSTIMOS -->
+        <div id="aba-emprestimos" class="tab-content">
+            <h2>Registrar Empréstimo</h2>
+            <form id="form-emprestimo">
+                <input type="text" id="nome-aluno" placeholder="Nome do Aluno" required>
+                <select id="select-livro" required>
+                    <option value="">Selecione um livro disponível...</option>
+                </select>
+                <input type="date" id="data-devolucao" required title="Data prevista para devolução">
+                <button type="submit" style="background-color: #007bff;">Confirmar Empréstimo</button>
+            </form>
+
+            <h2>Empréstimos Ativos</h2>
+            <table id="tabela-emprestimos">
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Aluno</th>
+                        <th>Devolução Prevista</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // 1. CONFIGURAÇÃO DO SUPABASE
+        // --- CONFIGURAÇÃO DO SUPABASE ---
         const SUPABASE_URL = 'https://sysghgyhotgobvbvzjju.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 2. BUSCAR E LISTAR LIVROS
-        async function carregarLivros() {
-            const { data: livros, error } = await supabase.from('livros').select('*').order('id', { ascending: false });
+        // --- CONTROLE DE ABAS ---
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             
-            if (error) {
-                console.error("Erro ao buscar livros:", error);
-                return;
-            }
+            document.getElementById(`aba-${aba}`).classList.add('active');
+            event.target.classList.add('active');
+
+            if (aba === 'livros') carregarLivros();
+            if (aba === 'emprestimos') carregarEmprestimos();
+        }
+
+        // --- 1. FUNÇÕES DE LIVROS ---
+        async function carregarLivros() {
+            const { data: livros, error } = await supabaseClient.from('livros').select('*').order('id', { ascending: false });
+            if (error) return console.error(error);
 
             const tbody = document.querySelector('#tabela-livros tbody');
-            tbody.innerHTML = ''; // Limpa a tabela antes de adicionar os novos dados
+            tbody.innerHTML = '';
+            
+            // Preenche também o select de empréstimos
+            const selectLivro = document.getElementById('select-livro');
+            selectLivro.innerHTML = '<option value="">Selecione um livro disponível...</option>';
 
             livros.forEach(livro => {
-                const tr = document.createElement('tr');
-                
-                // Define a cor e o texto baseado na disponibilidade
                 const statusTexto = livro.disponivel ? 'Disponível' : 'Emprestado';
                 const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
+                const categoria = livro.categoria || 'Geral';
 
-                tr.innerHTML = `
-                    <td>${livro.titulo}</td>
-                    <td>${livro.autor}</td>
-                    <td class="${statusClasse}">${statusTexto}</td>
-                    <td>
-                        <button onclick="alternarStatus(${livro.id}, ${livro.disponivel})" style="background-color: #ffc107; color: black;">
-                            ${livro.disponivel ? 'Emprestar' : 'Devolver'}
-                        </button>
-                    </td>
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${livro.titulo}</td>
+                        <td>${livro.autor}</td>
+                        <td>${categoria}</td>
+                        <td class="${statusClasse}">${statusTexto}</td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
+
+                // Adiciona ao select se estiver disponível
+                if (livro.disponivel) {
+                    selectLivro.innerHTML += `<option value="${livro.id}">${livro.titulo}</option>`;
+                }
             });
         }
 
-        // 3. CADASTRAR LIVRO
         document.getElementById('form-livro').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Impede a página de recarregar
-
+            e.preventDefault();
             const titulo = document.getElementById('titulo').value;
             const autor = document.getElementById('autor').value;
-            const isbn = document.getElementById('isbn').value;
+            const categoria = document.getElementById('categoria').value;
 
-            const { data, error } = await supabase
-                .from('livros')
-                .insert([{ titulo: titulo, autor: autor, isbn: isbn }]);
+            const { error } = await supabaseClient.from('livros').insert([{ titulo, autor, categoria }]);
 
             if (error) {
-                alert("Erro ao cadastrar livro: " + error.message);
+                alert("Erro ao cadastrar: " + error.message);
             } else {
-                alert("Livro cadastrado com sucesso!");
-                document.getElementById('form-livro').reset(); // Limpa o formulário
-                carregarLivros(); // Atualiza a tabela na tela
+                document.getElementById('form-livro').reset();
+                carregarLivros();
+                alert("Livro cadastrado!");
             }
         });
 
-        // 4. ALTERAR STATUS (EMPRESTAR / DEVOLVER)
-        async function alternarStatus(id, statusAtual) {
-            const novoStatus = !statusAtual; // Inverte true/false
-            
-            const { error } = await supabase
-                .from('livros')
-                .update({ disponivel: novoStatus })
-                .eq('id', id);
+        // --- 2. FUNÇÕES DE EMPRÉSTIMOS ---
+        async function carregarEmprestimos() {
+            // Busca empréstimos que não foram devolvidos e traz os dados do livro junto
+            const { data: emprestimos, error } = await supabaseClient
+                .from('emprestimos')
+                .select(`*, livros (titulo)`)
+                .eq('devolvido', false);
 
-            if (error) {
-                alert("Erro ao atualizar status.");
-            } else {
-                carregarLivros(); // Atualiza a tabela
-            }
+            if (error) return console.error(error);
+
+            const tbody = document.querySelector('#tabela-emprestimos tbody');
+            tbody.innerHTML = '';
+
+            emprestimos.forEach(emp => {
+                const dataFormatada = new Date(emp.data_devolucao).toLocaleDateString('pt-BR');
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${emp.livros.titulo}</td>
+                        <td>${emp.nome_aluno}</td>
+                        <td>${dataFormatada}</td>
+                        <td>
+                            <button class="btn-devolver" onclick="devolverLivro(${emp.id}, ${emp.livro_id})">Devolver</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        // Inicializa a lista ao abrir a página
+        document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const livro_id = document.getElementById('select-livro').value;
+            const nome_aluno = document.getElementById('nome-aluno').value;
+            const data_devolucao = document.getElementById('data-devolucao').value;
+
+            if(!livro_id) return alert("Selecione um livro!");
+
+            // 1. Registra o empréstimo
+            const { error: erroEmprestimo } = await supabaseClient
+                .from('emprestimos')
+                .insert([{ livro_id, nome_aluno, data_devolucao }]);
+
+            if (erroEmprestimo) return alert("Erro: " + erroEmprestimo.message);
+
+            // 2. Atualiza o livro para "indisponível"
+            await supabaseClient.from('livros').update({ disponivel: false }).eq('id', livro_id);
+
+            alert("Empréstimo registrado!");
+            document.getElementById('form-emprestimo').reset();
+            carregarEmprestimos();
+            carregarLivros(); // Atualiza a lista de livros em background
+        });
+
+        async function devolverLivro(emprestimo_id, livro_id) {
+            // 1. Marca o empréstimo como devolvido
+            await supabaseClient.from('emprestimos').update({ devolvido: true }).eq('id', emprestimo_id);
+            
+            // 2. Marca o livro como disponível novamente
+            await supabaseClient.from('livros').update({ disponivel: true }).eq('id', livro_id);
+
+            alert("Livro devolvido com sucesso!");
+            carregarEmprestimos();
+            carregarLivros(); // Atualiza a lista de livros em background
+        }
+
+        // Inicializa
         carregarLivros();
     </script>
 </body>
