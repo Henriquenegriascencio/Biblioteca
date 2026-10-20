@@ -28,6 +28,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('livros')">Acervo de Livros</button>
             <button class="tab-btn" onclick="mudarAba('emprestimos')">Gerenciar Empréstimos</button>
+            <button class="tab-btn" onclick="mudarAba('alunos')">Gerenciar Alunos</button>
         </div>
 
         <!-- ABA DE LIVROS -->
@@ -68,6 +69,20 @@
                 <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
                 <tbody></tbody>
             </table>
+        </div>
+
+        <!-- NOVA ABA DE ALUNOS -->
+        <div id="aba-alunos" class="tab-content">
+            <h2>Cadastrar Novo Aluno</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">O aluno usará o e-mail e a senha definidos aqui para acessar o sistema.</p>
+            <form id="form-aluno">
+                <input type="text" id="aluno-nome" placeholder="Nome Completo do Aluno" required>
+                <input type="email" id="aluno-email" placeholder="E-mail do Aluno" required>
+                <input type="password" id="aluno-senha" placeholder="Senha Inicial (mín 6 caracteres)" required>
+                <input type="text" id="aluno-turma" placeholder="Turma (ex: 1º Ano A)" required>
+                <input type="text" id="aluno-matricula" placeholder="Matrícula (ex: 12345)" required>
+                <button type="submit" style="background-color: var(--success);">Criar Conta do Aluno</button>
+            </form>
         </div>
     </div>
 </body>

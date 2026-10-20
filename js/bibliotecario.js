@@ -126,3 +126,38 @@ async function renovarEmprestimo(emprestimo_id, dataAtualString) {
     await window.supabaseClient.from('emprestimos').update({ data_devolucao: dataAtual.toISOString().split('T')[0] }).eq('id', emprestimo_id);
     carregarEmprestimos();
 }
+
+// --- CADASTRAR ALUNO ---
+document.getElementById('form-aluno').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nome = document.getElementById('aluno-nome').value;
+    const email = document.getElementById('aluno-email').value;
+    const senha = document.getElementById('aluno-senha').value;
+    const turma = document.getElementById('aluno-turma').value;
+    const matricula = document.getElementById('aluno-matricula').value;
+
+    // Cria um cliente TEMPORÁRIO para não deslogar o bibliotecário
+    const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const { error } = await tempClient.auth.signUp({
+        email: email,
+        password: senha,
+        options: { 
+            data: { 
+                nome: nome, 
+                tipo_usuario: 'aluno',
+                turma: turma,
+                matricula: matricula
+            } 
+        }
+    });
+
+    if (error) {
+        alert("Erro ao cadastrar aluno: " + error.message);
+    } else {
+        alert(`Aluno ${nome} cadastrado com sucesso!`);
+        document.getElementById('form-aluno').reset();
+        carregarAlunos(); // Atualiza o select de empréstimos
+    }
+});

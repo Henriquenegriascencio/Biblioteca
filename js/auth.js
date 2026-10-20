@@ -9,19 +9,6 @@ async function checarSessaoExistente() {
 }
 checarSessaoExistente();
 
-// Função para mostrar/esconder campos de aluno no cadastro
-function alternarCamposAluno() {
-    const tipo = document.getElementById('reg-tipo').value;
-    const camposAluno = document.getElementById('campos-aluno');
-    if (tipo === 'aluno') {
-        camposAluno.style.display = 'block';
-    } else {
-        camposAluno.style.display = 'none';
-        document.getElementById('reg-turma').value = ''; // Limpa os campos
-        document.getElementById('reg-matricula').value = '';
-    }
-}
-
 // Login
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();

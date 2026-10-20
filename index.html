@@ -16,6 +16,7 @@
             <h1>📚 Biblioteca Escolar</h1>
             <p style="color: var(--text-muted); margin-bottom: 20px;">Faça login para continuar</p>
         </div>
+        
         <div class="tab-content active" style="display: block;">
             <form id="form-login">
                 <h2>Entrar</h2>
@@ -23,28 +24,9 @@
                 <input type="password" id="login-senha" placeholder="Senha" required>
                 <button type="submit">Entrar</button>
             </form>
-            
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            
-            <form id="form-registro">
-                <h2>Criar Conta</h2>
-                <input type="text" id="reg-nome" placeholder="Nome Completo" required>
-                <input type="email" id="reg-email" placeholder="E-mail" required>
-                <input type="password" id="reg-senha" placeholder="Senha (mín 6 caracteres)" required>
-                
-                <select id="reg-tipo" onchange="alternarCamposAluno()">
-                    <option value="aluno">Sou Aluno</option>
-                    <option value="bibliotecario">Sou Bibliotecário</option>
-                </select>
-
-                <!-- Campos que só aparecem para alunos -->
-                <div id="campos-aluno">
-                    <input type="text" id="reg-turma" placeholder="Sua Turma (ex: 1º Ano A)">
-                    <input type="text" id="reg-matricula" placeholder="Sua Matrícula (ex: 12345)">
-                </div>
-
-                <button type="submit" style="background-color: var(--success);">Cadastrar</button>
-            </form>
+            <p style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+                Esqueceu a senha? Procure a biblioteca.
+            </p>
         </div>
     </div>
 </body>
