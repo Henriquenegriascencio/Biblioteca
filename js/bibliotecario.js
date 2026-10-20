@@ -1,21 +1,29 @@
 let usuarioAtual = null;
+let tipoUsuario = 'aluno'; // Adicione esta linha
 
-// Proteção da Rota
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) return window.location.href = 'index.html';
 
     const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
-    if (perfil.tipo_usuario !== 'bibliotecario') return window.location.href = 'aluno.html'; // Se for aluno, expulsa
+    
+    // Se for aluno, expulsa para a tela de aluno
+    if (perfil.tipo_usuario === 'aluno') return window.location.href = 'aluno.html'; 
 
     usuarioAtual = session.user;
+    tipoUsuario = perfil.tipo_usuario;
     document.getElementById('user-nome').innerText = perfil.nome;
     
-    carregarLivros();
+    // Se for Administrador, libera a opção de criar Bibliotecário
+    if (tipoUsuario === 'administrador') {
+        document.getElementById('opt-bibliotecario').style.display = 'block';
+        document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
+    }
+
+    carregarLivros();   
     carregarAlunos();
     carregarEmprestimos();
 }
-init();
 
 function mudarAba(aba) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -127,17 +135,16 @@ async function renovarEmprestimo(emprestimo_id, dataAtualString) {
     carregarEmprestimos();
 }
 
-// --- CADASTRAR ALUNO ---
-document.getElementById('form-aluno').addEventListener('submit', async (e) => {
+document.getElementById('form-usuario').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const nome = document.getElementById('aluno-nome').value;
-    const email = document.getElementById('aluno-email').value;
-    const senha = document.getElementById('aluno-senha').value;
-    const turma = document.getElementById('aluno-turma').value;
-    const matricula = document.getElementById('aluno-matricula').value;
+    const nome = document.getElementById('user-nome').value;
+    const email = document.getElementById('user-email').value;
+    const senha = document.getElementById('user-senha').value;
+    const tipoConta = document.getElementById('user-tipo').value;
+    const turma = document.getElementById('user-turma').value;
+    const matricula = document.getElementById('user-matricula').value;
 
-    // Cria um cliente TEMPORÁRIO para não deslogar o bibliotecário
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const { error } = await tempClient.auth.signUp({
@@ -146,7 +153,7 @@ document.getElementById('form-aluno').addEventListener('submit', async (e) => {
         options: { 
             data: { 
                 nome: nome, 
-                tipo_usuario: 'aluno',
+                tipo_usuario: tipoConta,
                 turma: turma,
                 matricula: matricula
             } 
@@ -154,10 +161,38 @@ document.getElementById('form-aluno').addEventListener('submit', async (e) => {
     });
 
     if (error) {
+        alert("Erro ao cadastrar usuário: " + error.message);
+    } else {
+        alert(`Conta criada com sucesso para ${nome}!`);
+        document.getElementById('form-usuario').reset();
+        alternarCamposUsuario(); // Reseta o form visualmente
+        if (tipoConta === 'aluno') carregarAlunos(); // Atualiza o select de empréstimo
+    }
+});
+
+    if (error) {
         alert("Erro ao cadastrar aluno: " + error.message);
     } else {
         alert(`Aluno ${nome} cadastrado com sucesso!`);
         document.getElementById('form-aluno').reset();
         carregarAlunos(); // Atualiza o select de empréstimos
+    };
+
+function alternarCamposUsuario() {
+    const tipo = document.getElementById('user-tipo').value;
+    const campos = document.getElementById('campos-aluno-user');
+    const inputTurma = document.getElementById('user-turma');
+    const inputMatricula = document.getElementById('user-matricula');
+
+    if (tipo === 'aluno') {
+        campos.style.display = 'block';
+        inputTurma.required = true;
+        inputMatricula.required = true;
+    } else {
+        campos.style.display = 'none';
+        inputTurma.required = false;
+        inputMatricula.required = false;
+        inputTurma.value = '';
+        inputMatricula.value = '';
     }
-});
+}

@@ -3,9 +3,9 @@ async function checarSessaoExistente() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (session) {
         const { data: perfil } = await window.supabaseClient.from('perfis').select('tipo_usuario').eq('id', session.user.id).single();
-        if (perfil?.tipo_usuario === 'bibliotecario') window.location.href = 'bibliotecario.html';
-        else window.location.href = 'aluno.html';
-    }
+        if (perfil.tipo_usuario === 'bibliotecario' || perfil.tipo_usuario === 'administrador') ;
+            window.location.href = 'bibliotecario.html';
+        }
 }
 checarSessaoExistente();
 

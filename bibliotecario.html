@@ -71,19 +71,30 @@
             </table>
         </div>
 
-        <!-- NOVA ABA DE ALUNOS -->
-        <div id="aba-alunos" class="tab-content">
-            <h2>Cadastrar Novo Aluno</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">O aluno usará o e-mail e a senha definidos aqui para acessar o sistema.</p>
-            <form id="form-aluno">
-                <input type="text" id="aluno-nome" placeholder="Nome Completo do Aluno" required>
-                <input type="email" id="aluno-email" placeholder="E-mail do Aluno" required>
-                <input type="password" id="aluno-senha" placeholder="Senha Inicial (mín 6 caracteres)" required>
-                <input type="text" id="aluno-turma" placeholder="Turma (ex: 1º Ano A)" required>
-                <input type="text" id="aluno-matricula" placeholder="Matrícula (ex: 12345)" required>
-                <button type="submit" style="background-color: var(--success);">Criar Conta do Aluno</button>
-            </form>
-        </div>
+               <!-- NOVA ABA DE USUÁRIOS -->
+               <div id="aba-alunos" class="tab-content">
+                <h2>Cadastrar Novo Usuário</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Crie contas de acesso para alunos ou novos bibliotecários.</p>
+                <form id="form-usuario">
+                    <input type="text" id="user-nome" placeholder="Nome Completo" required>
+                    <input type="email" id="user-email" placeholder="E-mail de acesso" required>
+                    <input type="password" id="user-senha" placeholder="Senha Inicial (mín 6 caracteres)" required>
+                    
+                    <!-- Seletor de tipo (Só o Administrador vê a opção de Bibliotecário) -->
+                    <select id="user-tipo" onchange="alternarCamposUsuario()">
+                        <option value="aluno">Aluno</option>
+                        <option value="bibliotecario" id="opt-bibliotecario" style="display:none;">Bibliotecário</option>
+                    </select>
+    
+                    <!-- Campos que só aparecem para Aluno -->
+                    <div id="campos-aluno-user">
+                        <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)" required>
+                        <input type="text" id="user-matricula" placeholder="Matrícula (ex: 12345)" required>
+                    </div>
+    
+                    <button type="submit" style="background-color: var(--success);">Criar Conta</button>
+                </form>
+            </div>
     </div>
 </body>
 </html>
