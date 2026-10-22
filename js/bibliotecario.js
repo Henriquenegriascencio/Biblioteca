@@ -1,35 +1,65 @@
 let usuarioAtual = null;
-let tipoUsuario = 'aluno'; // Adicione esta linha
+let tipoUsuario = 'aluno';
 
+// Função que roda ao abrir a página
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
+    
+    // 1. Se não estiver logado, vai pro login
     if (!session) return window.location.href = 'index.html';
 
-    const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
-    
-    // Se for aluno, expulsa para a tela de aluno
-    if (perfil.tipo_usuario === 'aluno') return window.location.href = 'aluno.html'; 
+    // 2. Descobre quem é o usuário
+    const { data: perfil } = await window.supabaseClient
+        .from('perfis')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-    usuarioAtual = session.user;
-    tipoUsuario = perfil.tipo_usuario;
-    document.getElementById('user-nome').innerText = perfil.nome;
-    
-    // Se for Administrador, libera a opção de criar Bibliotecário
-    if (tipoUsuario === 'administrador') {
-        document.getElementById('opt-bibliotecario').style.display = 'block';
-        document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
+    // 3. Se for aluno (ou não tiver perfil), é expulso para a tela de aluno
+    if (!perfil || perfil.tipo_usuario === 'aluno') {
+        return window.location.href = 'aluno.html';
     }
 
-    carregarLivros();   
+    // 4. Configura a tela baseada no cargo
+    usuarioAtual = session.user;
+    tipoUsuario = perfil.tipo_usuario;
+    document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
+
+    if (tipoUsuario === 'administrador') {
+        // Admin vê o título de Admin e a opção de criar bibliotecário
+        document.getElementById('opt-bibliotecario').style.display = 'block';
+        document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
+    } else {
+        // Bibliotecário comum não vê a opção de criar bibliotecário
+        document.getElementById('opt-bibliotecario').style.display = 'none';
+        document.querySelector('.header h1').innerText = '📚 Painel do Bibliotecário';
+    }
+
+    // 5. Carrega os dados
+    carregarLivros();
     carregarAlunos();
     carregarEmprestimos();
 }
+init();
 
-function mudarAba(aba) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(`aba-${aba}`).classList.add('active');
-    event.target.classList.add('active');
+// Função para esconder os campos de turma se for criar um Bibliotecário
+function alternarCamposUsuario() {
+    const tipo = document.getElementById('user-tipo').value;
+    const campos = document.getElementById('campos-aluno-user');
+    const inputTurma = document.getElementById('user-turma');
+    const inputMatricula = document.getElementById('user-matricula');
+
+    if (tipo === 'aluno') {
+        campos.style.display = 'block';
+        inputTurma.required = true;
+        inputMatricula.required = true;
+    } else {
+        campos.style.display = 'none';
+        inputTurma.required = false;
+        inputMatricula.required = false;
+        inputTurma.value = '';
+        inputMatricula.value = '';
+    }
 }
 
 // --- LIVROS ---

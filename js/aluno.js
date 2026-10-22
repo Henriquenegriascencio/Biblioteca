@@ -1,16 +1,29 @@
 let usuarioAtual = null;
 
-// Proteção da Rota
+// Função que roda ao abrir a página
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
+    
+    // 1. Se não estiver logado, vai pro login
     if (!session) return window.location.href = 'index.html';
 
-    const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
-    if (perfil.tipo_usuario !== 'aluno') return window.location.href = 'bibliotecario.html'; // Se for bib, expulsa
+    // 2. Descobre quem é o usuário
+    const { data: perfil } = await window.supabaseClient
+        .from('perfis')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
+    // 3. Se NÃO for aluno (for bibliotecário ou admin), expulsa para o painel de funcionários
+    if (!perfil || perfil.tipo_usuario !== 'aluno') {
+        return window.location.href = 'bibliotecario.html';
+    }
+
+    // 4. Configura a tela do aluno
     usuarioAtual = session.user;
-    document.getElementById('user-nome').innerText = perfil.nome;
+    document.getElementById('user-nome').innerText = perfil.nome || 'Aluno';
     
+    // 5. Carrega os dados
     carregarLivros();
     carregarMeusEmprestimos();
 }
