@@ -3,19 +3,21 @@ const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Verifica o tema ao carregar a página
 if (localStorage.getItem('tema') === 'dark') {
+    document.documentElement.classList.add('dark-mode');
     document.body.classList.add('dark-mode');
 }
 
-// Função para trocar o tema
-function alternarTema() {
+// Função de trocar tema
+window.alternarTema = function() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
     const check = document.getElementById('check-dark');
     if (check) check.checked = document.body.classList.contains('dark-mode');
-}
+};
 
-// FUNÇÃO SAIR BLINDADA (O window. garante que o HTML ache ela)
+// Função de Sair
 window.fazerLogout = async function() {
     try {
         await window.supabaseClient.auth.signOut();
@@ -26,7 +28,7 @@ window.fazerLogout = async function() {
     }
 };
 
-// FUNÇÃO ABRIR CONFIGURAÇÕES
+// Função de Abrir Configurações
 window.abrirConfig = async function() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) return;
@@ -51,7 +53,11 @@ window.abrirConfig = async function() {
     }
     
     const modal = document.getElementById('modal-config');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+        modal.classList.add('active');
+    } else {
+        console.error("ERRO: A div id='modal-config' não existe no HTML.");
+    }
 };
 
 window.fecharConfig = function() {
