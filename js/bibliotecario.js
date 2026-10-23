@@ -130,9 +130,7 @@ document.getElementById('form-emprestimo').addEventListener('submit', async (e) 
     carregarLivros(); 
 });
 
-// --- ALUNOS E EMPRÉSTIMOS ---
 async function carregarAlunos() {
-    // Traz todos os alunos ordenados por nome
     const { data: alunos } = await window.supabaseClient
         .from('perfis')
         .select('*')
@@ -144,10 +142,12 @@ async function carregarAlunos() {
     
     if (alunos) {
         alunos.forEach(a => {
-            // Monta o texto: João Silva (1º Ano A) - Mat: 12345
+            // Se o nome for nulo por algum motivo, mostra "Aluno sem nome"
+            const nomeSeguro = a.nome ? a.nome : 'Aluno sem nome';
             const turmaTexto = a.turma ? ` - ${a.turma}` : '';
             const matTexto = a.matricula ? ` - Mat: ${a.matricula}` : '';
-            select.innerHTML += `<option value="${a.id}">${a.nome}${turmaTexto}${matTexto}</option>`;
+            
+            select.innerHTML += `<option value="${a.id}">${nomeSeguro}${turmaTexto}${matTexto}</option>`;
         });
     }
 }
@@ -225,16 +225,24 @@ async function renovarEmprestimo(emprestimo_id, dataAtualString) {
 document.getElementById('form-usuario').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const nome = document.getElementById('user-nome').value;
-    const email = document.getElementById('user-email').value;
+    // Pega os valores do formulário
+    const nome = document.getElementById('user-nome').value.trim();
+    const email = document.getElementById('user-email').value.trim();
     const senha = document.getElementById('user-senha').value;
     const tipoConta = document.getElementById('user-tipo').value;
     const turma = document.getElementById('user-turma').value;
     const matricula = document.getElementById('user-matricula').value;
 
+    // Validação básica
+    if (senha.length < 6) {
+        return alert("A senha precisa ter pelo menos 6 caracteres.");
+    }
+
+    // Cria um cliente temporário para não deslogar o admin
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const { error } = await tempClient.auth.signUp({
+    // 1. Cria o usuário no Authentication
+    const { data, error } = await tempClient.auth.signUp({
         email: email,
         password: senha,
         options: { 
@@ -248,22 +256,28 @@ document.getElementById('form-usuario').addEventListener('submit', async (e) => 
     });
 
     if (error) {
-        alert("Erro ao cadastrar usuário: " + error.message);
-    } else {
-        alert(`Conta criada com sucesso para ${nome}!`);
-        document.getElementById('form-usuario').reset();
-        alternarCamposUsuario(); // Reseta o form visualmente
-        if (tipoConta === 'aluno') carregarAlunos(); // Atualiza o select de empréstimo
+        return alert("Erro ao cadastrar usuário: " + error.message);
+    } 
+
+    // 2. GARANTIA EXTRA: Atualiza o perfil na tabela para garantir que o nome foi salvo
+    if (data && data.user) {
+        await window.supabaseClient.from('perfis').upsert({
+            id: data.user.id,
+            nome: nome,
+            tipo_usuario: tipoConta,
+            turma: turma,
+            matricula: matricula
+        });
+    }
+
+    alert(`Conta criada com sucesso para ${nome}!`);
+    document.getElementById('form-usuario').reset();
+    alternarCamposUsuario(); 
+    
+    if (tipoConta === 'aluno') {
+        carregarAlunos(); 
     }
 });
-
-    if (error) {
-        alert("Erro ao cadastrar aluno: " + error.message);
-    } else {
-        alert(`Aluno ${nome} cadastrado com sucesso!`);
-        document.getElementById('form-aluno').reset();
-        carregarAlunos(); // Atualiza o select de empréstimos
-    };
 
 function alternarCamposUsuario() {
     const tipo = document.getElementById('user-tipo').value;
