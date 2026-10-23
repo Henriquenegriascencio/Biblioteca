@@ -5,37 +5,35 @@ let tipoUsuario = 'aluno';
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     
-    // 1. Se não estiver logado, vai pro login
+    // Se não tiver logado, vai pro login
     if (!session) return window.location.href = 'index.html';
 
-    // 2. Descobre quem é o usuário
     const { data: perfil } = await window.supabaseClient
         .from('perfis')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-    // 3. Se for aluno (ou não tiver perfil), é expulso para a tela de aluno
+    // Se for aluno (ou não tiver perfil), expulsa para a página de aluno
     if (!perfil || perfil.tipo_usuario === 'aluno') {
         return window.location.href = 'aluno.html';
     }
 
-    // 4. Configura a tela baseada no cargo
+    // Salva quem está logado
     usuarioAtual = session.user;
     tipoUsuario = perfil.tipo_usuario;
     document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
 
+    // Muda o título e libera o botão de criar bibliotecário se for ADMIN
     if (tipoUsuario === 'administrador') {
-        // Admin vê o título de Admin e a opção de criar bibliotecário
         document.getElementById('opt-bibliotecario').style.display = 'block';
         document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
     } else {
-        // Bibliotecário comum não vê a opção de criar bibliotecário
         document.getElementById('opt-bibliotecario').style.display = 'none';
         document.querySelector('.header h1').innerText = '📚 Painel do Bibliotecário';
     }
 
-    // 5. Carrega os dados
+    // Carrega os dados
     carregarLivros();
     carregarAlunos();
     carregarEmprestimos();

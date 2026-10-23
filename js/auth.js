@@ -1,14 +1,6 @@
-// Verifica se o usuário já está logado ao abrir a página
-async function checarSessaoExistente() {
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    if (session) {
-        redirecionarPorTipo(session.user.id);
-    }
-}
-checarSessaoExistente();
-
-// Função centralizadora de redirecionamento
+// Função para redirecionar baseado no perfil
 async function redirecionarPorTipo(userId) {
+    // Tenta buscar o perfil
     const { data: perfil, error } = await window.supabaseClient
         .from('perfis')
         .select('tipo_usuario')
@@ -16,21 +8,52 @@ async function redirecionarPorTipo(userId) {
         .single();
 
     if (error || !perfil) {
-        alert("Erro: Perfil não encontrado no banco de dados. Contate o administrador.");
-        await window.supabaseClient.auth.signOut();
+        // Se der erro, avisa na tela em vez de ficar em silêncio
+        alert("Erro ao buscar perfil no banco: " + (error ? error.message : "Perfil não encontrado."));
+        console.error(error);
         return;
     }
 
-    // Direcionamento baseado no cargo
-    if (perfil.tipo_usuario === 'administrador' || perfil.tipo_usuario === 'bibliotecario') {
+    // Mostra no console qual cargo foi lido do banco (Aperte F12 para ver)
+    console.log("O banco diz que o cargo é:", perfil.tipo_usuario);
+
+    const cargo = perfil.tipo_usuario;
+
+    // Redirecionamento
+    if (cargo === 'administrador' || cargo === 'bibliotecario') {
         window.location.href = 'bibliotecario.html';
-    } else if (perfil.tipo_usuario === 'aluno') {
+    } else if (cargo === 'aluno') {
         window.location.href = 'aluno.html';
     } else {
-        alert("Tipo de usuário desconhecido: " + perfil.tipo_usuario);
-        await window.supabaseClient.auth.signOut();
+        alert("Cargo desconhecido no banco de dados: " + cargo);
     }
 }
+
+// Botão de Login
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-senha').value;
+
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+        alert("Erro ao entrar: " + error.message);
+    } else {
+        // Passa o ID do usuário logado para a função de cima
+        await redirecionarPorTipo(data.user.id);
+    }
+});
+
+// Verifica se o usuário já estava logado ao abrir a página
+async function checarSessaoExistente() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (session) {
+        await redirecionarPorTipo(session.user.id);
+    }
+}
+checarSessaoExistente();
+
 
 // Ação do botão de Login
 document.getElementById('form-login').addEventListener('submit', async (e) => {
