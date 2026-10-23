@@ -13,8 +13,16 @@ window.alternarTema = function() {
 };
 
 window.fazerLogout = async function() {
-    await window.supabaseClient.auth.signOut();
-    window.location.href = 'index.html';
+    try {
+        // Desloga do Supabase
+        await window.supabaseClient.auth.signOut();
+        // Redireciona para o login substituindo o histórico
+        window.location.replace('index.html');
+    } catch (error) {
+        console.error("Erro ao sair:", error);
+        // Se der erro, força o redirecionamento de qualquer forma
+        window.location.replace('index.html');
+    }
 };
 
 window.abrirConfig = async function() {

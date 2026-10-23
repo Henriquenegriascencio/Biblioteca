@@ -12,9 +12,13 @@
 <body>
     <div class="container">
         <div class="user-bar">
-            <span>Olá, <strong id="user-nome">...</strong> (📚 Bibliotecário)</span>
-            <div><button onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button><button onclick="fazerLogout()" class="btn-sair">Sair</button></div>
-        </div>
+            <div class="user-bar">
+                <span>Olá, <strong id="user-nome">...</strong></span>
+                <div>
+                    <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
+                    <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
+                </div>
+            </div>
         <div class="header"><h1>📚 Painel do Bibliotecário</h1></div>
         <div class="dashboard">
             <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
