@@ -37,6 +37,27 @@ async function init() {
 }
 init();
 
+function mudarAba(aba) {
+    // 1. Esconde todos os conteúdos
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    
+    // 2. Tira o destaque de todos os botões
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    // 3. Mostra a aba certa
+    const conteudoAlvo = document.getElementById(`aba-${aba}`);
+    if (conteudoAlvo) {
+        conteudoAlvo.classList.add('active');
+    } else {
+        console.error("Erro: Não encontrei a div com ID 'aba-" + aba + "'");
+    }
+
+    // 4. Destaca o botão que foi clicado (usando o 'event' global do navegador)
+    if (window.event && window.event.target) {
+        window.event.target.classList.add('active');
+    }
+}
+
 // Função para esconder os campos de turma se for criar um Bibliotecário
 function alternarCamposUsuario() {
     const tipo = document.getElementById('user-tipo').value;
