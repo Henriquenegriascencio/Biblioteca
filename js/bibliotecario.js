@@ -38,24 +38,18 @@ async function init() {
 init();
 
 function mudarAba(aba) {
-    // 1. Esconde todos os conteúdos
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    
-    // 2. Tira o destaque de todos os botões
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     
-    // 3. Mostra a aba certa
-    const conteudoAlvo = document.getElementById(`aba-${aba}`);
-    if (conteudoAlvo) {
-        conteudoAlvo.classList.add('active');
-    } else {
-        console.error("Erro: Não encontrei a div com ID 'aba-" + aba + "'");
-    }
-
-    // 4. Destaca o botão que foi clicado (usando o 'event' global do navegador)
+    document.getElementById(`aba-${aba}`).classList.add('active');
     if (window.event && window.event.target) {
         window.event.target.classList.add('active');
     }
+
+    // Carrega os dados de cada aba ao clicar
+    if (aba === 'livros') carregarLivros();
+    if (aba === 'emprestimos') carregarEmprestimos();
+    if (aba === 'relatorios') carregarRelatorios(); // Nova linha!
 }
 
 // Função para esconder os campos de turma se for criar um Bibliotecário
@@ -169,9 +163,22 @@ document.getElementById('form-emprestimo').addEventListener('submit', async (e) 
 });
 
 async function devolverLivro(emprestimo_id, livro_id) {
-    await window.supabaseClient.from('emprestimos').update({ devolvido: true }).eq('id', emprestimo_id);
+    if(!confirm("Confirmar devolução do livro?")) return;
+    
+    // Pega a data de hoje no formato AAAA-MM-DD
+    const hoje = new Date().toISOString().split('T')[0];
+
+    // Marca como devolvido E salva a data real
+    await window.supabaseClient.from('emprestimos')
+        .update({ devolvido: true, data_devolucao_real: hoje })
+        .eq('id', emprestimo_id);
+        
     await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livro_id);
-    carregarEmprestimos(); carregarLivros();
+    
+    alert("Livro devolvido com sucesso!");
+    carregarEmprestimos(); 
+    carregarLivros();
+    carregarRelatorios(); // Atualiza os relatórios em segundo plano
 }
 
 async function renovarEmprestimo(emprestimo_id, dataAtualString) {
@@ -241,4 +248,65 @@ function alternarCamposUsuario() {
         inputTurma.value = '';
         inputMatricula.value = '';
     }
+}
+
+// --- RELATÓRIOS ---
+async function carregarRelatorios() {
+    // Busca TODOS os empréstimos (sem filtro), do mais recente para o mais antigo
+    const { data: historico, error } = await window.supabaseClient
+        .from('emprestimos')
+        .select(`*, livros (titulo), perfis (nome)`)
+        .order('id', { ascending: false });
+
+    if (error) return console.error(error);
+
+    const tbody = document.querySelector('#tabela-relatorios tbody');
+    tbody.innerHTML = '';
+    
+    const hoje = new Date(); 
+    hoje.setHours(0, 0, 0, 0);
+
+    historico.forEach(emp => {
+        const dataEmp = new Date(emp.criado_em).toLocaleDateString('pt-BR');
+        const dataPrev = new Date(emp.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR');
+        const dataReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+        
+        const nomeAluno = emp.perfis ? emp.perfis.nome : 'Desconhecido';
+        const tituloLivro = emp.livros ? emp.livros.titulo : 'Livro Excluído';
+
+        let statusHtml = '';
+        let linhaClasse = '';
+
+        if (emp.devolvido) {
+            // Se já foi devolvido, verifica se houve atraso na entrega
+            const dataDev = new Date(emp.data_devolucao + 'T00:00:00');
+            const dataRealObj = new Date(emp.data_devolucao_real + 'T00:00:00');
+            
+            if (dataRealObj > dataDev) {
+                statusHtml = `<span class="status-emprestado" style="background:#FEE2E2; color:#991B1B;">Devolvido c/ Atraso</span>`;
+            } else {
+                statusHtml = `<span class="status-disponivel">Devolvido</span>`;
+            }
+        } else {
+            // Se não foi devolvido, verifica se está atrasado hoje
+            const dataDev = new Date(emp.data_devolucao + 'T00:00:00');
+            if (dataDev < hoje) {
+                statusHtml = `<span class="status-atraso">Atrasado</span>`;
+                linhaClasse = 'linha-atraso';
+            } else {
+                statusHtml = `<span class="status-emprestado">Em andamento</span>`;
+            }
+        }
+
+        tbody.innerHTML += `
+            <tr class="${linhaClasse}">
+                <td>${tituloLivro}</td>
+                <td>${nomeAluno}</td>
+                <td>${dataEmp}</td>
+                <td>${dataPrev}</td>
+                <td>${dataReal}</td>
+                <td>${statusHtml}</td>
+            </tr>
+        `;
+    });
 }

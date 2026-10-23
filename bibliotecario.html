@@ -29,7 +29,8 @@
                 <div class="tabs">
                     <button class="tab-btn active" onclick="mudarAba('livros')">Acervo de Livros</button>
                     <button class="tab-btn" onclick="mudarAba('emprestimos')">Gerenciar Empréstimos</button>
-                    <button class="tab-btn" onclick="mudarAba('alunos')">Gerenciar Alunos</button>
+                    <button class="tab-btn" onclick="mudarAba('alunos')">Gerenciar Usuários</button>
+                    <button class="tab-btn" onclick="mudarAba('relatorios')">Relatórios</button>
                 </div>
 
         <!-- ABA DE LIVROS -->
@@ -74,6 +75,25 @@
 
                <!-- NOVA ABA DE USUÁRIOS -->
                <div id="aba-alunos" class="tab-content">
+                        <!-- NOVA ABA DE RELATÓRIOS -->
+        <div id="aba-relatorios" class="tab-content">
+            <h2>Histórico Geral de Empréstimos</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Acompanhe todos os empréstimos já realizados na biblioteca.</p>
+            
+            <table id="tabela-relatorios">
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Aluno</th>
+                        <th>Empréstimo</th>
+                        <th>Prev. Devolução</th>
+                        <th>Dev. Real</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
                 <h2>Cadastrar Novo Usuário</h2>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Crie contas de acesso para alunos ou novos bibliotecários.</p>
                 <form id="form-usuario">
