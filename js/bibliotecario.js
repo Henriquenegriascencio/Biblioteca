@@ -76,35 +76,46 @@ function alternarCamposUsuario() {
 document.getElementById('form-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // 1. Pega os elementos na tela
+    // 1. Pega os elementos
     const elNome = document.getElementById('user-nome');
     const elEmail = document.getElementById('user-email');
     const elSenha = document.getElementById('user-senha');
     const elTipo = document.getElementById('user-tipo');
-    const elTurma = document.getElementById('user-turma');
-    const elMatricula = document.getElementById('user-matricula');
+    
+    // LOG DE TESTE NO CONSOLE (F12)
+    console.log("Valor lido no campo nome:", elNome ? elNome.value : "Elemento não encontrado");
 
-    // 2. Verifica se os campos obrigatórios existem no HTML
+    // 2. Verifica se os elementos existem
     if (!elNome || !elEmail || !elSenha || !elTipo) {
-        return alert("Erro interno: O formulário não tem os campos necessários.");
+        return alert("Erro interno: O formulário está com os IDs errados no HTML.");
     }
 
-    // 3. Extrai os valores com segurança (se for nulo, vira string vazia)
-    const nome = elNome.value ? elNome.value.trim() : '';
-    const email = elEmail.value ? elEmail.value.trim() : '';
-    const senha = elSenha.value || '';
-    const tipoConta = elTipo.value || 'aluno';
-    const turma = elTurma && elTurma.value ? elTurma.value.trim() : '';
-    const matricula = elMatricula && elMatricula.value ? elMatricula.value.trim() : '';
+    // 3. Pega os valores limpando os espaços em branco
+    const nome = elNome.value.trim();
+    const email = elEmail.value.trim();
+    const senha = elSenha.value;
+    const tipoConta = elTipo.value;
 
-    // 4. Validação para não criar usuário sem nome
-    if (nome === '') return alert("Por favor, digite o nome do usuário.");
-    if (email === '') return alert("Por favor, digite o e-mail.");
-    if (senha.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
+    // Pega turma e matrícula apenas se os campos existirem
+    const elTurma = document.getElementById('user-turma');
+    const elMatricula = document.getElementById('user-matricula');
+    const turma = elTurma ? elTurma.value.trim() : '';
+    const matricula = elMatricula ? elMatricula.value.trim() : '';
+
+    // 4. Verifica se o nome está realmente vazio
+    if (nome === '') {
+        return alert("Por favor, digite o nome do usuário.");
+    }
+    if (email === '') {
+        return alert("Por favor, digite o e-mail.");
+    }
+    if (senha.length < 6) {
+        return alert("A senha precisa ter pelo menos 6 caracteres.");
+    }
 
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 5. Cria o login
+    // 5. Cria o login no Supabase Auth
     const { data, error } = await tempClient.auth.signUp({ 
         email: email, 
         password: senha, 
@@ -118,14 +129,19 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
         } 
     });
 
-    if (error) return alert("Erro ao criar login: " + error.message);
+    if (error) {
+        console.error("Erro no Auth:", error);
+        return alert("Erro ao criar login: " + error.message);
+    }
 
-    // 6. Força a gravação na tabela PERFIS (A garantia extra)
+    // 6. Salva os dados na tabela perfis
     if (data && data.user) {
+        console.log("Usuário criado no Auth. Salvando perfil...");
+        
         const { error: erroUpsert } = await window.supabaseClient.from('perfis').upsert([{ 
             id: data.user.id, 
-            nome: nome,              // Valor explícito
-            tipo_usuario: tipoConta, // Valor explícito
+            nome: nome, 
+            tipo_usuario: tipoConta, 
             turma: turma,
             matricula: matricula
         }]);
@@ -137,8 +153,8 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
 
         alert(`Conta de ${nome} criada com sucesso!`);
         document.getElementById('form-usuario').reset();
-        alternarCamposUsuario();
-        carregarAlunos();
+        if (typeof alternarCamposUsuario === 'function') alternarCamposUsuario();
+        if (typeof carregarAlunos === 'function') carregarAlunos();
     } else {
         alert("Erro: O Supabase não retornou o usuário. Verifique se o e-mail já está em uso.");
     }

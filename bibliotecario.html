@@ -67,24 +67,28 @@
             </table>
         </div>
 
-        <!-- ABA USUÁRIOS -->
-        <div id="aba-usuarios" class="tab-content">
-            <h2>Cadastrar Novo Usuário</h2>
-            <form id="form-usuario">
-                <input type="text" id="user-nome" placeholder="Nome Completo" required>
-                <input type="email" id="user-email" placeholder="E-mail de acesso" required>
-                <input type="password" id="user-senha" placeholder="Senha (mín 6 caracteres)" required>
-                <select id="user-tipo" onchange="alternarCamposUsuario()">
-                    <option value="aluno">Aluno</option>
-                    <option value="bibliotecario" id="opt-bibliotecario" style="display:none;">Bibliotecário</option>
-                </select>
-                <div id="campos-aluno-user">
-                    <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)">
-                    <input type="text" id="user-matricula" placeholder="Matrícula">
-                </div>
-                <button type="submit">Criar Conta</button>
-            </form>
-        </div>
+               <!-- ABA USUÁRIOS -->
+               <div id="aba-usuarios" class="tab-content">
+                <h2>Cadastrar Novo Usuário</h2>
+                <form id="form-usuario">
+                    <!-- Note que o ID é exatamente 'user-nome' -->
+                    <input type="text" id="user-nome" placeholder="Nome Completo" required>
+                    <input type="email" id="user-email" placeholder="E-mail de acesso" required>
+                    <input type="password" id="user-senha" placeholder="Senha (mín 6 caracteres)" required>
+                    
+                    <select id="user-tipo" onchange="alternarCamposUsuario()">
+                        <option value="aluno">Aluno</option>
+                        <option value="bibliotecario" id="opt-bibliotecario" style="display:none;">Bibliotecário</option>
+                    </select>
+    
+                    <div id="campos-aluno-user">
+                        <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)">
+                        <input type="text" id="user-matricula" placeholder="Matrícula">
+                    </div>
+    
+                    <button type="submit">Criar Conta</button>
+                </form>
+            </div>
 
         <!-- ABA RELATÓRIOS -->
         <div id="aba-relatorios" class="tab-content">
