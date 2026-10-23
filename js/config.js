@@ -3,23 +3,38 @@ const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode');
+
+window.alternarTema = function() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    const check = document.getElementById('check-dark');
+    if (check) check.checked = document.body.classList.contains('dark-mode');
+};
+
 window.fazerLogout = async function() {
     await window.supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 };
 
-// Verifica se o usuário já escolheu o modo escuro antes
-if (localStorage.getItem('tema') === 'dark') {
-    document.body.classList.add('dark-mode');
-}
-
-// Função global para alternar o tema
-window.alternarTema = function() {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('tema', isDark ? 'dark' : 'light');
+window.abrirConfig = async function() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) return;
     
-    // Atualiza o checkbox do modal, se ele existir na tela
-    const checkbox = document.getElementById('check-dark');
-    if (checkbox) checkbox.checked = isDark;
+    const check = document.getElementById('check-dark');
+    if (check) check.checked = document.body.classList.contains('dark-mode');
+
+    const { data: p } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
+    if (p) {
+        document.getElementById('conf-nome').innerText = p.nome;
+        document.getElementById('conf-email').innerText = session.user.email;
+        document.getElementById('conf-tipo').innerText = p.tipo_usuario.toUpperCase();
+        if(document.getElementById('conf-turma')) document.getElementById('conf-turma').innerText = p.turma || '-';
+        if(document.getElementById('conf-matricula')) document.getElementById('conf-matricula').innerText = p.matricula || '-';
+    }
+    document.getElementById('modal-config').classList.add('active');
+};
+
+window.fecharConfig = function() {
+    document.getElementById('modal-config').classList.remove('active');
 };

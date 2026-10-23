@@ -2,8 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Painel - Biblioteca</title>
+    <title>Meu Painel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,15 +12,10 @@
 <body>
     <div class="container">
         <div class="user-bar">
-            <span>Olá, <strong id="user-nome">...</strong> (<span id="user-tipo">...</span>)</span>
-            <div>
-                <button onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
-                <button onclick="fazerLogout()" class="btn-sair">Sair</button>
-            </div>
+            <span>Olá, <strong id="user-nome">...</strong> (🎒 Aluno)</span>
+            <div><button onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button><button onclick="fazerLogout()" class="btn-sair">Sair</button></div>
         </div>
-
         <div class="header"><h1>🎒 Meu Painel</h1></div>
-
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('livros', event)">Consultar Acervo</button>
             <button class="tab-btn" onclick="mudarAba('meus-emprestimos', event)">Meus Empréstimos</button>
@@ -29,44 +23,31 @@
 
         <div id="aba-livros" class="tab-content active">
             <h2>Livros na Biblioteca</h2>
-            <table id="tabela-livros">
-                <thead><tr><th>Título</th><th>Autor</th><th>Categoria</th><th>Status</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            <table id="tabela-livros"><thead><tr><th>Título</th><th>Autor</th><th>Categoria</th><th>Status</th></tr></thead><tbody></tbody></table>
         </div>
 
         <div id="aba-meus-emprestimos" class="tab-content">
             <h2>Meus Livros Emprestados</h2>
             <table id="tabela-emprestimos">
-                <thead>
-                    <tr>
-                        <th>Livro</th>
-                        <th>Devolução Prevista</th>
-                        <th>Status</th>
-                        <th>Ações</th> <!-- NOVA COLUNA -->
-                    </tr>
-                </thead>
+                <thead><tr><th>Livro</th><th>Devolução Prevista</th><th>Status</th><th>Ações</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
+    </div>
 
-            <!-- MODAL DE CONFIGURAÇÕES -->
+    <!-- MODAL CONFIG -->
     <div id="modal-config" class="modal-overlay">
         <div class="modal-box">
             <h2>Meu Perfil</h2>
-            <p><strong>Nome:</strong> <span id="conf-nome">Carregando...</span></p>
-            <p><strong>E-mail:</strong> <span id="conf-email">Carregando...</span></p>
-            <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
-            <p><strong>Turma:</strong> <span id="conf-turma">-</span></p>
-            <p><strong>Matrícula:</strong> <span id="conf-matricula">-</span></p>
-            
+            <p><strong>Nome:</strong> <span id="conf-nome">...</span></p>
+            <p><strong>E-mail:</strong> <span id="conf-email">...</span></p>
+            <p><strong>Função:</strong> Aluno</p>
+            <p><strong>Turma:</strong> <span id="conf-turma">...</span></p>
+            <p><strong>Matrícula:</strong> <span id="conf-matricula">...</span></p>
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            
             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
-                <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;">
-                Ativar Modo Escuro 🌙
+                <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;"> Ativar Modo Escuro 🌙
             </label>
-
             <button class="close-btn" onclick="fecharConfig()">Fechar</button>
         </div>
     </div>
