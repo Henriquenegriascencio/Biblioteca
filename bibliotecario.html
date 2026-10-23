@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Bibliotecário</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Painel - Biblioteca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
-    <!-- REMOVA o 'defer' se estiver presente -->
-    <script src="js/bibliotecario.js"></script> 
+    <script src="js/bibliotecario.js" defer></script>
 </head>
 <body>
     <div class="container">
         <div class="user-bar">
-            <span>Olá, <strong id="user-nome">Carregando...</strong> (Bibliotecário)</span>
+            <span>Olá, <strong id="user-nome">Carregando...</strong> (<span id="user-tipo">...</span>)</span>
             <button onclick="fazerLogout()" class="btn-sair">Sair</button>
         </div>
 
-        <div class="header"><h1>📚 Painel do Bibliotecário</h1></div>
+        <div class="header"><h1 id="titulo-painel">📚 Painel</h1></div>
 
         <div class="dashboard">
             <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
@@ -26,15 +25,14 @@
             <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
         </div>
 
-                <!-- Botões das Abas -->
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="mudarAba('livros')">Acervo de Livros</button>
-                    <button class="tab-btn" onclick="mudarAba('emprestimos')">Gerenciar Empréstimos</button>
-                    <button class="tab-btn" onclick="mudarAba('alunos')">Gerenciar Usuários</button>
-                    <button class="tab-btn" onclick="mudarAba('relatorios')">Relatórios</button>
-                </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('livros', event)">Acervo</button>
+            <button class="tab-btn" onclick="mudarAba('emprestimos', event)">Empréstimos</button>
+            <button class="tab-btn" onclick="mudarAba('usuarios', event)">Usuários</button>
+            <button class="tab-btn" onclick="mudarAba('relatorios', event)">Relatórios</button>
+        </div>
 
-        <!-- ABA DE LIVROS -->
+        <!-- ABA LIVROS -->
         <div id="aba-livros" class="tab-content active">
             <h2>Cadastrar Novo Livro</h2>
             <form id="form-livro">
@@ -43,81 +41,59 @@
                 <select id="categoria">
                     <option value="Didático">Didático</option>
                     <option value="Ficção">Ficção</option>
-                    <option value="Biografia">Biografia</option>
                     <option value="Infantil">Infantil</option>
                     <option value="Geral">Geral</option>
                 </select>
                 <button type="submit">Cadastrar Livro</button>
             </form>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            <h2>Livros Cadastrados</h2>
             <table id="tabela-livros">
                 <thead><tr><th>Título</th><th>Autor</th><th>Categoria</th><th>Status</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
 
-        <!-- ABA DE EMPRÉSTIMOS -->
+        <!-- ABA EMPRÉSTIMOS -->
         <div id="aba-emprestimos" class="tab-content">
             <h2>Registrar Empréstimo</h2>
             <form id="form-emprestimo">
                 <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
                 <select id="select-livro" required><option value="">Selecione um livro disponível...</option></select>
                 <input type="date" id="data-devolucao" required>
-                <button type="submit" style="background-color: var(--primary);">Confirmar Empréstimo</button>
+                <button type="submit">Confirmar Empréstimo</button>
             </form>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            <h2>Todos os Empréstimos Ativos</h2>
             <table id="tabela-emprestimos">
                 <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
 
-               <!-- NOVA ABA DE USUÁRIOS -->
-               <div id="aba-alunos" class="tab-content">
-                <h2>Cadastrar Novo Usuário</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Crie contas de acesso para alunos ou novos bibliotecários.</p>
-                <form id="form-usuario">
-                    <input type="text" id="user-nome" placeholder="Nome Completo" required>
-                    <input type="email" id="user-email" placeholder="E-mail de acesso" required>
-                    <input type="password" id="user-senha" placeholder="Senha Inicial (mín 6 caracteres)" required>
-                    
-                    <!-- Seletor de tipo (Só o Administrador vê a opção de Bibliotecário) -->
-                    <select id="user-tipo" onchange="alternarCamposUsuario()">
-                        <option value="aluno">Aluno</option>
-                        <option value="bibliotecario" id="opt-bibliotecario" style="display:none;">Bibliotecário</option>
-                    </select>
-    
-                    <!-- Campos que só aparecem para Aluno -->
-                    <div id="campos-aluno-user">
-                        <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)" required>
-                        <input type="text" id="user-matricula" placeholder="Matrícula (ex: 12345)" required>
-                    </div>
+        <!-- ABA USUÁRIOS -->
+        <div id="aba-usuarios" class="tab-content">
+            <h2>Cadastrar Novo Usuário</h2>
+            <form id="form-usuario">
+                <input type="text" id="user-nome" placeholder="Nome Completo" required>
+                <input type="email" id="user-email" placeholder="E-mail de acesso" required>
+                <input type="password" id="user-senha" placeholder="Senha (mín 6 caracteres)" required>
+                <select id="user-tipo" onchange="alternarCamposUsuario()">
+                    <option value="aluno">Aluno</option>
+                    <option value="bibliotecario" id="opt-bibliotecario" style="display:none;">Bibliotecário</option>
+                </select>
+                <div id="campos-aluno-user">
+                    <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)">
+                    <input type="text" id="user-matricula" placeholder="Matrícula">
+                </div>
+                <button type="submit">Criar Conta</button>
+            </form>
+        </div>
 
-                      <!-- NOVA ABA DE RELATÓRIOS -->
+        <!-- ABA RELATÓRIOS -->
         <div id="aba-relatorios" class="tab-content">
-            <h2>Histórico Geral de Empréstimos</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Acompanhe todos os empréstimos já realizados na biblioteca.</p>
-            
+            <h2>Histórico Geral</h2>
             <table id="tabela-relatorios">
-                <thead>
-                    <tr>
-                        <th>Livro</th>
-                        <th>Aluno</th>
-                        <th>Empréstimo</th>
-                        <th>Prev. Devolução</th>
-                        <th>Dev. Real</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Livro</th><th>Aluno</th><th>Empréstimo</th><th>Previsto</th><th>Devolvido</th><th>Status</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
-    
-                    <button type="submit" style="background-color: var(--success);">Criar Conta</button>
-                </form>
-            </div>
     </div>
 </body>
 </html>

@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Biblioteca Escolar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Login - Biblioteca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/auth.js" defer></script>
 </head>
 <body>
-    <div class="container" style="max-width: 400px; margin-top: 50px;">
+    <div class="container" style="max-width: 400px; margin-top: 80px;">
         <div class="header">
             <h1>📚 Biblioteca Escolar</h1>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Faça login para continuar</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Acesso restrito</p>
         </div>
-        
         <div class="tab-content active" style="display: block;">
             <form id="form-login">
-                <h2>Entrar</h2>
                 <input type="email" id="login-email" placeholder="E-mail" required>
                 <input type="password" id="login-senha" placeholder="Senha" required>
                 <button type="submit">Entrar</button>
             </form>
             <p style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted);">
-                Esqueceu a senha? Procure a biblioteca.
+                Alunos e Bibliotecários: peçam a senha ao Administrador.
             </p>
         </div>
     </div>

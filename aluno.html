@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Painel - Biblioteca Escolar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Meu Painel - Biblioteca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
@@ -20,11 +20,10 @@
         <div class="header"><h1>🎒 Meu Painel</h1></div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('livros')">Consultar Acervo</button>
-            <button class="tab-btn" onclick="mudarAba('meus-emprestimos')">Meus Empréstimos</button>
+            <button class="tab-btn active" onclick="mudarAba('livros', event)">Consultar Acervo</button>
+            <button class="tab-btn" onclick="mudarAba('meus-emprestimos', event)">Meus Empréstimos</button>
         </div>
 
-        <!-- ABA DE LIVROS -->
         <div id="aba-livros" class="tab-content active">
             <h2>Livros na Biblioteca</h2>
             <table id="tabela-livros">
@@ -33,9 +32,8 @@
             </table>
         </div>
 
-        <!-- ABA DE EMPRÉSTIMOS -->
         <div id="aba-meus-emprestimos" class="tab-content">
-            <h2>Meus Empréstimos Ativos</h2>
+            <h2>Meus Livros Emprestados</h2>
             <table id="tabela-emprestimos">
                 <thead><tr><th>Livro</th><th>Devolução Prevista</th><th>Status</th></tr></thead>
                 <tbody></tbody>
