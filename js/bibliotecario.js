@@ -88,14 +88,46 @@ async function carregarLivros() {
     });
 }
 
-document.getElementById('form-livro').addEventListener('submit', async (e) => {
+document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const titulo = document.getElementById('titulo').value;
-    const autor = document.getElementById('autor').value;
-    const categoria = document.getElementById('categoria').value;
-    await window.supabaseClient.from('livros').insert([{ titulo, autor, categoria }]);
-    document.getElementById('form-livro').reset();
-    carregarLivros();
+    
+    const selectLivro = document.getElementById('select-livro');
+    const selectAluno = document.getElementById('select-aluno');
+    
+    const livro_id = selectLivro.value;
+    const aluno_id = selectAluno.value;
+    const data_devolucao = document.getElementById('data-devolucao').value;
+
+    // Validação para garantir que nada vai vazio
+    if (!livro_id || !aluno_id) {
+        return alert("Por favor, selecione o livro e o aluno corretamente!");
+    }
+
+    // Pega o nome do aluno que está escrito na opção do select
+    const nome_aluno = selectAluno.options[selectAluno.selectedIndex].text;
+
+    // Insere no banco salvando o ID e o Nome por segurança
+    const { error: erroEmprestimo } = await window.supabaseClient
+        .from('emprestimos')
+        .insert([{ 
+            livro_id: livro_id, 
+            aluno_id: aluno_id, 
+            nome_aluno: nome_aluno, 
+            data_devolucao: data_devolucao 
+        }]);
+
+    if (erroEmprestimo) {
+        return alert("Erro ao registrar empréstimo: " + erroEmprestimo.message);
+    }
+
+    // Atualiza o livro para indisponível
+    await window.supabaseClient.from('livros').update({ disponivel: false }).eq('id', livro_id);
+
+    alert("Empréstimo registrado com sucesso!");
+    document.getElementById('form-emprestimo').reset();
+    
+    carregarEmprestimos();
+    carregarLivros(); 
 });
 
 // --- ALUNOS E EMPRÉSTIMOS ---
@@ -131,6 +163,8 @@ async function carregarEmprestimos() {
     emprestimos.forEach(emp => {
         const dataDev = new Date(emp.data_devolucao + 'T00:00:00');
         const dataFormatada = dataDev.toLocaleDateString('pt-BR');
+        // Se achar o perfil na tabela, usa ele. Se não, usa o nome que foi salvo no empréstimo. Se não tiver nenhum, usa 'Aluno Desconhecido'.
+const nomeAluno = emp.perfis?.nome || emp.nome_aluno || 'Aluno Desconhecido';
         let statusHtml = '<span class="status-disponivel">Em dia</span>';
         let linhaClasse = '';
 
@@ -271,7 +305,8 @@ async function carregarRelatorios() {
         const dataPrev = new Date(emp.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR');
         const dataReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         
-        const nomeAluno = emp.perfis ? emp.perfis.nome : 'Desconhecido';
+        // Se achar o perfil na tabela, usa ele. Se não, usa o nome que foi salvo no empréstimo. Se não tiver nenhum, usa 'Aluno Desconhecido'.
+const nomeAluno = emp.perfis?.nome || emp.nome_aluno || 'Aluno Desconhecido';
         const tituloLivro = emp.livros ? emp.livros.titulo : 'Livro Excluído';
 
         let statusHtml = '';
