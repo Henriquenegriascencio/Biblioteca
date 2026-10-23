@@ -7,23 +7,26 @@ if (localStorage.getItem('tema') === 'dark') {
     document.body.classList.add('dark-mode');
 }
 
-window.alternarTema = function() {
+// Função para trocar o tema
+function alternarTema() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
     const check = document.getElementById('check-dark');
     if (check) check.checked = document.body.classList.contains('dark-mode');
-};
+}
 
+// FUNÇÃO SAIR BLINDADA (O window. garante que o HTML ache ela)
 window.fazerLogout = async function() {
     try {
         await window.supabaseClient.auth.signOut();
-        window.location.replace('index.html'); // Força a saída
+        window.location.href = 'index.html';
     } catch (error) {
         console.error(error);
-        window.location.replace('index.html');
+        window.location.href = 'index.html';
     }
 };
 
+// FUNÇÃO ABRIR CONFIGURAÇÕES
 window.abrirConfig = async function() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) return;
@@ -33,16 +36,25 @@ window.abrirConfig = async function() {
 
     const { data: p } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
     if (p) {
-        document.getElementById('conf-nome').innerText = p.nome || 'Usuário';
-        document.getElementById('conf-email').innerText = session.user.email;
-        document.getElementById('conf-tipo').innerText = p.tipo_usuario ? p.tipo_usuario.toUpperCase() : 'ALUNO';
+        const elNome = document.getElementById('conf-nome');
+        const elEmail = document.getElementById('conf-email');
+        const elTipo = document.getElementById('conf-tipo');
         
-        if(document.getElementById('conf-turma')) document.getElementById('conf-turma').innerText = p.turma || '-';
-        if(document.getElementById('conf-matricula')) document.getElementById('conf-matricula').innerText = p.matricula || '-';
+        if (elNome) elNome.innerText = p.nome || 'Usuário';
+        if (elEmail) elEmail.innerText = session.user.email;
+        if (elTipo) elTipo.innerText = p.tipo_usuario ? p.tipo_usuario.toUpperCase() : 'ALUNO';
+        
+        const elTurma = document.getElementById('conf-turma');
+        const elMatricula = document.getElementById('conf-matricula');
+        if (elTurma) elTurma.innerText = p.turma || '-';
+        if (elMatricula) elMatricula.innerText = p.matricula || '-';
     }
-    document.getElementById('modal-config').classList.add('active');
+    
+    const modal = document.getElementById('modal-config');
+    if (modal) modal.classList.add('active');
 };
 
 window.fecharConfig = function() {
-    document.getElementById('modal-config').classList.remove('active');
+    const modal = document.getElementById('modal-config');
+    if (modal) modal.classList.remove('active');
 };

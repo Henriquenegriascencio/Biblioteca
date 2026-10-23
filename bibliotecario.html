@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="css/style.css">
     
     <!-- ORDEM CORRETA DOS SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js"></script> <!-- Carrega as configurações e funções globais -->
-    <script src="js/bibliotecario.js" defer></script> <!-- Carrega a lógica da página -->
-</head>
+       <!-- Scripts -->
+       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+       <script src="js/config.js" defer></script>
+       <script src="js/bibliotecario.js" defer></script>
+   </head>
 <body>
     <div class="container">
         <!-- Barra de Usuário -->
@@ -109,6 +110,26 @@
             </label>
             <button class="close-btn" onclick="fecharConfig()">Fechar</button>
         </div>
+
+</div> <!-- Fecha a div container principal -->
+
+<!-- MODAL DE CONFIGURAÇÕES (ESSENCIAL PARA O BOTÃO FUNCIONAR) -->
+<div id="modal-config" class="modal-overlay">
+    <div class="modal-box">
+        <h2>Meu Perfil</h2>
+        <p><strong>Nome:</strong> <span id="conf-nome">...</span></p>
+        <p><strong>E-mail:</strong> <span id="conf-email">...</span></p>
+        <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+            <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;"> Ativar Modo Escuro 🌙
+        </label>
+        <button class="close-btn" onclick="fecharConfig()">Fechar</button>
     </div>
+</div>
+
+</body>
+</html>
+
 </body>
 </html>
