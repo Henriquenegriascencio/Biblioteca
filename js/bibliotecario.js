@@ -248,3 +248,31 @@ async function carregarRelatorios() {
         `;
     });
 }
+
+
+
+// --- CONTROLE DO MODAL DE CONFIGURAÇÕES ---
+async function abrirConfig() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) return;
+    
+    // Marca o checkbox se o modo escuro estiver ativo
+    document.getElementById('check-dark').checked = document.body.classList.contains('dark-mode');
+
+    // Busca os dados atualizados do perfil
+    const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
+    
+    if (perfil) {
+        document.getElementById('conf-nome').innerText = perfil.nome || 'Não informado';
+        document.getElementById('conf-email').innerText = session.user.email;
+        document.getElementById('conf-tipo').innerText = perfil.tipo_usuario.toUpperCase();
+        document.getElementById('conf-turma').innerText = perfil.turma || '-';
+        document.getElementById('conf-matricula').innerText = perfil.matricula || '-';
+    }
+    
+    document.getElementById('modal-config').classList.add('active');
+}
+
+function fecharConfig() {
+    document.getElementById('modal-config').classList.remove('active');
+}

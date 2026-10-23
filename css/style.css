@@ -48,3 +48,47 @@ th { background: #FAFAFA; color: var(--text-muted); text-transform: uppercase; f
 
 .btn-devolver { background: #E0F2FE; color: #0369A1; padding: 6px 10px; font-size: 12px; }
 .btn-renovar { background: #F3F4F6; color: #1F2937; padding: 6px 10px; font-size: 12px; margin-left: 5px; }
+
+/* =========================================
+   MODO ESCURO
+   ========================================= */
+   body.dark-mode {
+    --primary: #6366F1;
+    --bg-color: #111827;
+    --surface: #1F2937;
+    --text-main: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --border: #374151;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode input, body.dark-mode select {
+    background-color: #374151;
+    color: #F9FAFB;
+}
+
+body.dark-mode input:focus, body.dark-mode select:focus {
+    background-color: #4B5563;
+}
+
+body.dark-mode th { background-color: #1F2937; }
+body.dark-mode tbody tr:hover { background-color: #374151; }
+body.dark-mode .tab-btn { background-color: transparent; color: var(--text-muted); }
+body.dark-mode .tab-btn.active { background-color: #374151; color: var(--primary); }
+body.dark-mode .linha-atraso { background-color: #451a1a !important; }
+
+/* =========================================
+   ESTILO DO MODAL (Configurações)
+   ========================================= */
+.modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+    background: var(--surface); padding: 30px; border-radius: var(--radius);
+    width: 90%; max-width: 400px; box-shadow: var(--shadow); color: var(--text-main);
+}
+.modal-box h2 { margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+.modal-box p { margin-bottom: 10px; font-size: 14px; }
+.modal-box .close-btn { background: var(--danger); margin-top: 20px; width: 100%; }

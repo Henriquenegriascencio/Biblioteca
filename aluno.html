@@ -13,8 +13,11 @@
 <body>
     <div class="container">
         <div class="user-bar">
-            <span>Olá, <strong id="user-nome">Carregando...</strong> (Aluno)</span>
-            <button onclick="fazerLogout()" class="btn-sair">Sair</button>
+            <span>Olá, <strong id="user-nome">...</strong> (<span id="user-tipo">...</span>)</span>
+            <div>
+                <button onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
+                <button onclick="fazerLogout()" class="btn-sair">Sair</button>
+            </div>
         </div>
 
         <div class="header"><h1>🎒 Meu Painel</h1></div>
@@ -35,9 +38,36 @@
         <div id="aba-meus-emprestimos" class="tab-content">
             <h2>Meus Livros Emprestados</h2>
             <table id="tabela-emprestimos">
-                <thead><tr><th>Livro</th><th>Devolução Prevista</th><th>Status</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Devolução Prevista</th>
+                        <th>Status</th>
+                        <th>Ações</th> <!-- NOVA COLUNA -->
+                    </tr>
+                </thead>
                 <tbody></tbody>
             </table>
+        </div>
+
+            <!-- MODAL DE CONFIGURAÇÕES -->
+    <div id="modal-config" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Meu Perfil</h2>
+            <p><strong>Nome:</strong> <span id="conf-nome">Carregando...</span></p>
+            <p><strong>E-mail:</strong> <span id="conf-email">Carregando...</span></p>
+            <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
+            <p><strong>Turma:</strong> <span id="conf-turma">-</span></p>
+            <p><strong>Matrícula:</strong> <span id="conf-matricula">-</span></p>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+            
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;">
+                Ativar Modo Escuro 🌙
+            </label>
+
+            <button class="close-btn" onclick="fecharConfig()">Fechar</button>
         </div>
     </div>
 </body>
