@@ -154,6 +154,8 @@ async function carregarAlunos() {
     }
 }
 
+
+
 async function carregarEmprestimos() {
     const { data: emprestimos } = await window.supabaseClient.from('emprestimos').select(`*, livros (titulo), perfis (nome)`).eq('devolvido', false);
     const tbody = document.querySelector('#tabela-emprestimos tbody');
@@ -161,7 +163,7 @@ async function carregarEmprestimos() {
     let contadorAtrasados = 0;
     document.getElementById('total-emprestados').innerText = emprestimos.length;
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-
+ 
     emprestimos.forEach(emp => {
         const dataDev = new Date(emp.data_devolucao + 'T00:00:00');
         const dataFormatada = dataDev.toLocaleDateString('pt-BR');
@@ -182,6 +184,29 @@ const nomeAluno = emp.perfis?.nome || emp.nome_aluno || 'Aluno Desconhecido';
         tbody.innerHTML += `<tr class="${linhaClasse}"><td>${emp.livros.titulo}</td><td>${emp.perfis.nome}</td><td>${dataFormatada}</td><td>${statusHtml}</td><td>${btnAcoes}</td></tr>`;
     });
     document.getElementById('total-atrasados').innerText = contadorAtrasados;
+}
+
+async function carregarEmprestimos() {
+    const { data: emprestimos, error } = await window.supabaseClient
+        .from('emprestimos')
+        .select(`*, livros (titulo), perfis (nome)`)
+        .eq('devolvido', false);
+
+    // PROTEÇÃO: Se der erro, mostra no console e usa um array vazio
+    if (error) {
+        console.error("Erro ao carregar empréstimos:", error);
+        return; 
+    }
+
+    // PROTEÇÃO: Garante que 'emprestimos' seja um array, mesmo se vier null
+    const listaEmprestimos = emprestimos || []; 
+
+    const tbody = document.querySelector('#tabela-emprestimos tbody');
+    tbody.innerHTML = '';
+    
+    let contadorAtrasados = 0;
+    document.getElementById('total-emprestados').innerText = listaEmprestimos.length;
+    // ... resto do código usando 'listaEmprestimos' ...
 }
 
 document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
@@ -227,35 +252,24 @@ async function renovarEmprestimo(emprestimo_id, dataAtualString) {
 document.getElementById('form-usuario').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Pega os valores do formulário
-    const nome = document.getElementById('user-nome').value.trim();
-    const email = document.getElementById('user-email').value.trim();
-    const senha = document.getElementById('user-senha').value;
-    const tipoConta = document.getElementById('user-tipo').value;
-    const turma = document.getElementById('user-turma').value;
-    const matricula = document.getElementById('user-matricula').value;
+    // PROTEÇÃO: Pega os elementos e verifica se existem
+    const inputNome = document.getElementById('user-nome');
+    const inputEmail = document.getElementById('user-email');
+    const inputSenha = document.getElementById('user-senha');
+    const selectTipo = document.getElementById('user-tipo');
+    const inputTurma = document.getElementById('user-turma');
+    const inputMatricula = document.getElementById('user-matricula');
 
-    // Validação básica
-    if (senha.length < 6) {
-        return alert("A senha precisa ter pelo menos 6 caracteres.");
+    if (!inputNome || !inputEmail || !inputSenha || !selectTipo) {
+        return alert("Erro interno: O formulário não foi encontrado na página.");
     }
 
-    // Cria um cliente temporário para não deslogar o admin
-    const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // 1. Cria o usuário no Authentication
-    const { data, error } = await tempClient.auth.signUp({
-        email: email,
-        password: senha,
-        options: { 
-            data: { 
-                nome: nome, 
-                tipo_usuario: tipoConta,
-                turma: turma,
-                matricula: matricula
-            } 
-        }
-    });
+    const nome = inputNome.value.trim();
+    const email = inputEmail.value.trim();
+    const senha = inputSenha.value;
+    const tipoConta = selectTipo.value;
+    const turma = inputTurma ? inputTurma.value : '';
+    const matricula = inputMatricula ? inputMatricula.value : '';
 
     if (error) {
         return alert("Erro ao cadastrar usuário: " + error.message);
@@ -280,6 +294,7 @@ document.getElementById('form-usuario').addEventListener('submit', async (e) => 
         carregarAlunos(); 
     }
 });
+    
 
 function alternarCamposUsuario() {
     const tipo = document.getElementById('user-tipo').value;
