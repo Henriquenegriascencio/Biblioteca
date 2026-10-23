@@ -54,12 +54,23 @@ async function carregarEstanteLivros() {
 
         livrosDaCat.forEach(livro => {
             const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
-            // Se estiver disponível, adiciona o evento de clique. Se não, não faz nada.
             const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')"` : '';
             
+            // Cria o wrapper e o card de detalhes
             html += `
-                <div class="livro-lombada ${statusClasse}" ${acaoClique} title="${livro.titulo} (${livro.autor}) - ${livro.disponivel ? 'Clique para pegar' : 'Emprestado'}">
-                    <h4>${livro.titulo}</h4>
+                <div class="livro-wrapper">
+                    <div class="livro-lombada ${statusClasse}" ${acaoClique}>
+                        <h4>${livro.titulo}</h4>
+                    </div>
+                    
+                    <!-- O Card de Detalhes que aparece no hover -->
+                    <div class="livro-tooltip">
+                        <h3>${livro.titulo}</h3>
+                        <p><strong>Autor:</strong> ${livro.autor}</p>
+                        <p><strong>Categoria:</strong> ${livro.categoria || 'Geral'}</p>
+                        <p><strong>Status:</strong> <span class="${livro.disponivel ? 'text-green' : 'text-red'}">${livro.disponivel ? 'Disponível para Empréstimo' : 'Já Emprestado'}</span></p>
+                        ${livro.disponivel ? '<small style="color: var(--primary); font-weight: bold; margin-top: 8px; display: block;">Clique para pegar (7 dias)</small>' : ''}
+                    </div>
                 </div>
             `;
         });
