@@ -75,25 +75,72 @@ function alternarCamposUsuario() {
 
 document.getElementById('form-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nome = document.getElementById('user-nome').value;
-    const email = document.getElementById('user-email').value;
-    const senha = document.getElementById('user-senha').value;
-    const tipo = document.getElementById('user-tipo').value;
-    const turma = document.getElementById('user-turma').value;
-    const matricula = document.getElementById('user-matricula').value;
+    
+    // 1. Pega os elementos na tela
+    const elNome = document.getElementById('user-nome');
+    const elEmail = document.getElementById('user-email');
+    const elSenha = document.getElementById('user-senha');
+    const elTipo = document.getElementById('user-tipo');
+    const elTurma = document.getElementById('user-turma');
+    const elMatricula = document.getElementById('user-matricula');
 
-    if (senha.length < 6) return alert("Senha muito curta.");
+    // 2. Verifica se os campos obrigatórios existem no HTML
+    if (!elNome || !elEmail || !elSenha || !elTipo) {
+        return alert("Erro interno: O formulário não tem os campos necessários.");
+    }
+
+    // 3. Extrai os valores com segurança (se for nulo, vira string vazia)
+    const nome = elNome.value ? elNome.value.trim() : '';
+    const email = elEmail.value ? elEmail.value.trim() : '';
+    const senha = elSenha.value || '';
+    const tipoConta = elTipo.value || 'aluno';
+    const turma = elTurma && elTurma.value ? elTurma.value.trim() : '';
+    const matricula = elMatricula && elMatricula.value ? elMatricula.value.trim() : '';
+
+    // 4. Validação para não criar usuário sem nome
+    if (nome === '') return alert("Por favor, digite o nome do usuário.");
+    if (email === '') return alert("Por favor, digite o e-mail.");
+    if (senha.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
 
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { data, error } = await tempClient.auth.signUp({ email, password: senha, options: { data: { nome, tipo_usuario: tipo, turma, matricula } } });
+
+    // 5. Cria o login
+    const { data, error } = await tempClient.auth.signUp({ 
+        email: email, 
+        password: senha, 
+        options: { 
+            data: { 
+                nome: nome, 
+                tipo_usuario: tipoConta, 
+                turma: turma, 
+                matricula: matricula 
+            } 
+        } 
+    });
 
     if (error) return alert("Erro ao criar login: " + error.message);
 
-    if (data.user) {
-        await window.supabaseClient.from('perfis').upsert([{ id: data.user.id, nome, tipo_usuario: tipo, turma, matricula }]);
-        alert("Usuário criado!");
+    // 6. Força a gravação na tabela PERFIS (A garantia extra)
+    if (data && data.user) {
+        const { error: erroUpsert } = await window.supabaseClient.from('perfis').upsert([{ 
+            id: data.user.id, 
+            nome: nome,              // Valor explícito
+            tipo_usuario: tipoConta, // Valor explícito
+            turma: turma,
+            matricula: matricula
+        }]);
+
+        if (erroUpsert) {
+            console.error("Erro ao salvar perfil:", erroUpsert);
+            return alert("Login criado, mas erro ao salvar os dados na tabela: " + erroUpsert.message);
+        }
+
+        alert(`Conta de ${nome} criada com sucesso!`);
         document.getElementById('form-usuario').reset();
+        alternarCamposUsuario();
         carregarAlunos();
+    } else {
+        alert("Erro: O Supabase não retornou o usuário. Verifique se o e-mail já está em uso.");
     }
 });
 
