@@ -115,28 +115,18 @@ function alternarCamposUsuario() {
 document.getElementById('form-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Captura os elementos HTML
-    const elNome = document.getElementById('user-nome');
-    const elEmail = document.getElementById('user-email');
-    const elSenha = document.getElementById('user-senha');
-    const elTipo = document.getElementById('user-tipo');
-    const elTurma = document.getElementById('user-turma');
-    const elMatricula = document.getElementById('user-matricula');
+    // A MÁGICA ACONTECE AQUI: O FormData lê os inputs pelo atributo "name"
+    const formData = new FormData(e.target);
+    
+    // Pega os valores com segurança (se não achar, retorna null, então usamos || '')
+    const nome = (formData.get('nome') || '').trim();
+    const email = (formData.get('email') || '').trim();
+    const senha = formData.get('senha') || '';
+    const tipoConta = formData.get('tipo') || 'aluno';
+    const turma = (formData.get('turma') || '').trim();
+    const matricula = (formData.get('matricula') || '').trim();
 
-    // Verifica se os elementos principais existem
-    if (!elNome || !elEmail || !elSenha || !elTipo) {
-        return alert("ERRO FATAL: Os inputs do formulário não foram encontrados. Verifique o HTML.");
-    }
-
-    // Usa o operador '?.value' ou '|| ""' para nunca dar erro de 'undefined'
-    const nome = elNome.value ? elNome.value.trim() : '';
-    const email = elEmail.value ? elEmail.value.trim() : '';
-    const senha = elSenha.value || '';
-    const tipoConta = elTipo.value || 'aluno';
-    const turma = elTurma && elTurma.value ? elTurma.value.trim() : '';
-    const matricula = elMatricula && elMatricula.value ? elMatricula.value.trim() : '';
-
-    // Validação
+    // Validações
     if (nome === '') return alert("Por favor, digite o nome do usuário.");
     if (email === '') return alert("Por favor, digite o e-mail.");
     if (senha.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
@@ -147,7 +137,7 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     const { data, error } = await tempClient.auth.signUp({ 
         email: email, 
         password: senha, 
-        options: { data: { nome, tipo_usuario: tipoConta, turma, matricula } } 
+        options: { data: { nome: nome, tipo_usuario: tipoConta, turma: turma, matricula: matricula } } 
     });
 
     if (error) return alert("Erro ao criar login: " + error.message);
