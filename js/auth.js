@@ -1,35 +1,32 @@
-// Função para redirecionar baseado no perfil
+/// Função que busca no banco e manda para a página certa
 async function redirecionarPorTipo(userId) {
-    // Tenta buscar o perfil
     const { data: perfil, error } = await window.supabaseClient
         .from('perfis')
         .select('tipo_usuario')
         .eq('id', userId)
         .single();
 
+    // Se der erro ou não achar o perfil, avisa na tela!
     if (error || !perfil) {
-        // Se der erro, avisa na tela em vez de ficar em silêncio
-        alert("Erro ao buscar perfil no banco: " + (error ? error.message : "Perfil não encontrado."));
-        console.error(error);
-        return;
+        alert("ERRO CRÍTICO: Seu perfil não foi encontrado na tabela 'perfis'. Contate o suporte.");
+        console.error("Erro no banco:", error);
+        return; 
     }
 
-    // Mostra no console qual cargo foi lido do banco (Aperte F12 para ver)
-    console.log("O banco diz que o cargo é:", perfil.tipo_usuario);
-
-    const cargo = perfil.tipo_usuario;
+    // Imprime no console (F12) para sabermos o que o banco respondeu
+    console.log("Cargo lido do banco:", perfil.tipo_usuario);
 
     // Redirecionamento
-    if (cargo === 'administrador' || cargo === 'bibliotecario') {
+    if (perfil.tipo_usuario === 'administrador' || perfil.tipo_usuario === 'bibliotecario') {
         window.location.href = 'bibliotecario.html';
-    } else if (cargo === 'aluno') {
+    } else if (perfil.tipo_usuario === 'aluno') {
         window.location.href = 'aluno.html';
     } else {
-        alert("Cargo desconhecido no banco de dados: " + cargo);
+        alert("Cargo desconhecido: " + perfil.tipo_usuario);
     }
 }
 
-// Botão de Login
+// Ação do botão de Login
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -40,12 +37,12 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     if (error) {
         alert("Erro ao entrar: " + error.message);
     } else {
-        // Passa o ID do usuário logado para a função de cima
+        // Passa o ID do usuário logado para a função acima
         await redirecionarPorTipo(data.user.id);
     }
 });
 
-// Verifica se o usuário já estava logado ao abrir a página
+// Verifica se já estava logado ao abrir a página
 async function checarSessaoExistente() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (session) {

@@ -1,11 +1,9 @@
 let usuarioAtual = null;
 let tipoUsuario = 'aluno';
 
-// Função que roda ao abrir a página
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     
-    // Se não tiver logado, vai pro login
     if (!session) return window.location.href = 'index.html';
 
     const { data: perfil } = await window.supabaseClient
@@ -14,17 +12,17 @@ async function init() {
         .eq('id', session.user.id)
         .single();
 
-    // Se for aluno (ou não tiver perfil), expulsa para a página de aluno
+    // Se for aluno, chuta de volta para a página de aluno
     if (!perfil || perfil.tipo_usuario === 'aluno') {
         return window.location.href = 'aluno.html';
     }
 
-    // Salva quem está logado
+    // Se chegou aqui, é Bibliotecário ou Administrador
     usuarioAtual = session.user;
     tipoUsuario = perfil.tipo_usuario;
     document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
 
-    // Muda o título e libera o botão de criar bibliotecário se for ADMIN
+    // Configura a tela para o Admin
     if (tipoUsuario === 'administrador') {
         document.getElementById('opt-bibliotecario').style.display = 'block';
         document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
@@ -33,7 +31,6 @@ async function init() {
         document.querySelector('.header h1').innerText = '📚 Painel do Bibliotecário';
     }
 
-    // Carrega os dados
     carregarLivros();
     carregarAlunos();
     carregarEmprestimos();
