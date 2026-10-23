@@ -2,30 +2,37 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Bibliotecário</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- ORDEM CORRETA DOS SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js"></script>
-    <script src="js/bibliotecario.js" defer></script>
+    <script src="js/config.js"></script> <!-- Carrega as configurações e funções globais -->
+    <script src="js/bibliotecario.js" defer></script> <!-- Carrega a lógica da página -->
 </head>
 <body>
     <div class="container">
+        <!-- Barra de Usuário -->
         <div class="user-bar">
-            <div class="user-bar">
-                <span>Olá, <strong id="user-nome">...</strong></span>
-                <div>
-                    <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
-                    <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
-                </div>
+            <span>Olá, <strong id="user-nome">...</strong> (📚 Bibliotecário)</span>
+            <div>
+                <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
+                <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
             </div>
-            </div>
+        </div>
+
         <div class="header"><h1>📚 Painel do Bibliotecário</h1></div>
+
+        <!-- Dashboard -->
         <div class="dashboard">
             <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
             <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
             <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
         </div>
+
+        <!-- Abas -->
         <div class="tabs">
             <button class="tab-btn active" onclick="mudarAba('livros', event)">Acervo</button>
             <button class="tab-btn" onclick="mudarAba('emprestimos', event)">Empréstimos</button>
@@ -39,7 +46,12 @@
             <form id="form-livro">
                 <input type="text" id="titulo" placeholder="Título" required>
                 <input type="text" id="autor" placeholder="Autor" required>
-                <select id="categoria"><option value="Didático">Didático</option><option value="Ficção">Ficção</option><option value="Infantil">Infantil</option><option value="Geral">Geral</option></select>
+                <select id="categoria">
+                    <option value="Didático">Didático</option>
+                    <option value="Ficção">Ficção</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Geral">Geral</option>
+                </select>
                 <button type="submit">Cadastrar</button>
             </form>
             <table id="tabela-livros"><thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th></tr></thead><tbody></tbody></table>
@@ -57,18 +69,16 @@
             <table id="tabela-emprestimos"><thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table>
         </div>
 
-        <!-- ABA USUÁRIOS (Apenas Alunos) -->
+        <!-- ABA USUÁRIOS -->
         <div id="aba-usuarios" class="tab-content">
             <h2>Cadastrar Novo Aluno</h2>
             <form id="form-usuario">
                 <input type="text" id="user-nome" name="nome" placeholder="Nome Completo" required>
                 <input type="email" id="user-email" name="email" placeholder="E-mail" required>
                 <input type="password" id="user-senha" name="senha" placeholder="Senha (mín 6)" required>
-                
-                <select id="user-tipo" name="tipo" onchange="alternarCamposUsuario()">
-                    <option value="aluno">Aluno</option> <!-- SEM OPÇÃO DE BIBLIOTECÁRIO -->
+                <select id="user-tipo" name="tipo">
+                    <option value="aluno">Aluno</option>
                 </select>
-
                 <div id="campos-aluno-user">
                     <input type="text" id="user-turma" name="turma" placeholder="Turma">
                     <input type="text" id="user-matricula" name="matricula" placeholder="Matrícula">

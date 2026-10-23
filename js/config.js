@@ -3,7 +3,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode');
+if (localStorage.getItem('tema') === 'dark') {
+    document.body.classList.add('dark-mode');
+}
 
 window.alternarTema = function() {
     document.body.classList.toggle('dark-mode');
@@ -14,13 +16,10 @@ window.alternarTema = function() {
 
 window.fazerLogout = async function() {
     try {
-        // Desloga do Supabase
         await window.supabaseClient.auth.signOut();
-        // Redireciona para o login substituindo o histórico
-        window.location.replace('index.html');
+        window.location.replace('index.html'); // Força a saída
     } catch (error) {
-        console.error("Erro ao sair:", error);
-        // Se der erro, força o redirecionamento de qualquer forma
+        console.error(error);
         window.location.replace('index.html');
     }
 };
@@ -34,9 +33,10 @@ window.abrirConfig = async function() {
 
     const { data: p } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
     if (p) {
-        document.getElementById('conf-nome').innerText = p.nome;
+        document.getElementById('conf-nome').innerText = p.nome || 'Usuário';
         document.getElementById('conf-email').innerText = session.user.email;
-        document.getElementById('conf-tipo').innerText = p.tipo_usuario.toUpperCase();
+        document.getElementById('conf-tipo').innerText = p.tipo_usuario ? p.tipo_usuario.toUpperCase() : 'ALUNO';
+        
         if(document.getElementById('conf-turma')) document.getElementById('conf-turma').innerText = p.turma || '-';
         if(document.getElementById('conf-matricula')) document.getElementById('conf-matricula').innerText = p.matricula || '-';
     }
