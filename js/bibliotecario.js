@@ -159,6 +159,7 @@ function alternarCamposUsuario() {
 document.getElementById('form-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Pega os valores dos campos
     const nome = document.getElementById('user-nome')?.value.trim();
     const email = document.getElementById('user-email')?.value.trim();
     const senha = document.getElementById('user-senha')?.value;
@@ -166,49 +167,54 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     const turma = document.getElementById('user-turma')?.value || '';
     const matricula = document.getElementById('user-matricula')?.value || '';
 
-    if (!nome || !email || !senha) return alert("Preencha todos os campos obrigatórios.");
-    if (senha.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
+    // Validações básicas
+    if (!nome || !email || !senha) {
+        return alert("Por favor, preencha Nome, E-mail e Senha.");
+    }
+    if (senha.length < 6) {
+        return alert("A senha precisa ter pelo menos 6 caracteres.");
+    }
 
-    console.log("Iniciando cadastro..."); // LOG 1
-
+    // Cria um cliente temporário para não deslogar o Admin atual
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 1. Tenta criar no Auth
-    const { data, error } = await tempClient.auth.signUp({
+    // 1. Cria o usuário no Authentication
+    const { data: authData, error: authError } = await tempClient.auth.signUp({
         email: email,
         password: senha,
         options: { data: { nome, tipo_usuario: tipoConta, turma, matricula } }
     });
 
-    if (error) {
-        console.error("Erro no Auth:", error); // LOG 2
-        return alert("Erro ao cadastrar usuário: " + error.message);
+    if (authError) {
+        return alert("Erro ao criar login: " + authError.message);
     }
 
-    console.log("Usuário criado no Auth:", data.user); // LOG 3
+    // 2. Força a gravação na tabela PERFIS (A garantia que você quer)
+    if (authData && authData.user) {
+        const { error: perfilError } = await window.supabaseClient
+            .from('perfis')
+            .upsert([{
+                id: authData.user.id,
+                nome: nome,
+                tipo_usuario: tipoConta,
+                turma: turma,
+                matricula: matricula
+            }]);
 
-    // 2. Tenta salvar na tabela perfis (A garantia extra)
-    if (data && data.user) {
-        const { error: erroPerfil } = await window.supabaseClient.from('perfis').upsert({
-            id: data.user.id,
-            nome: nome,
-            tipo_usuario: tipoConta,
-            turma: turma,
-            matricula: matricula
-        });
-
-        if (erroPerfil) {
-            console.error("Erro ao salvar na tabela perfis:", erroPerfil); // LOG 4
-            alert("Conta de login criada, mas erro ao salvar os dados: " + erroPerfil.message);
-        } else {
-            console.log("Perfil salvo com sucesso na tabela!"); // LOG 5
-            alert(`Conta criada com sucesso para ${nome}!`);
-            document.getElementById('form-usuario').reset();
-            alternarCamposUsuario(); 
-            if (tipoConta === 'aluno') carregarAlunos(); 
+        if (perfilError) {
+            console.error("Erro no perfil:", perfilError);
+            alert("Login criado, mas erro ao salvar na tabela de perfis: " + perfilError.message);
+            return;
         }
+
+        // Se chegou aqui, deu tudo certo!
+        alert(`Conta de ${nome} criada com sucesso e salva no sistema!`);
+        document.getElementById('form-usuario').reset();
+        alternarCamposUsuario(); 
+        
+        if (tipoConta === 'aluno') carregarAlunos(); 
     } else {
-        alert("O Supabase não retornou os dados do usuário. Verifique se o e-mail já está em uso.");
+        alert("O Supabase não retornou os dados do usuário. Verifique se este e-mail já está em uso no sistema.");
     }
 });
 
