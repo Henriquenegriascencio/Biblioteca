@@ -22,12 +22,14 @@ async function init() {
     tipoUsuario = perfil.tipo_usuario;
     document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
 
-    // Configura a tela para o Admin
-    if (tipoUsuario === 'administrador') {
+       // Se for Admin OU Bibliotecário, libera a opção de criar bibliotecário
+       if (tipoUsuario === 'administrador' || tipoUsuario === 'bibliotecario') {
         document.getElementById('opt-bibliotecario').style.display = 'block';
+    }
+    
+    if (tipoUsuario === 'administrador') {
         document.querySelector('.header h1').innerText = '👑 Painel do Administrador';
     } else {
-        document.getElementById('opt-bibliotecario').style.display = 'none';
         document.querySelector('.header h1').innerText = '📚 Painel do Bibliotecário';
     }
 
