@@ -3,11 +3,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_YoavoW5o3SuMdp-b5Apmhg_GpPEit0O';
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Verifica o tema ao carregar a página
-if (localStorage.getItem('tema') === 'dark') {
-    document.documentElement.classList.add('dark-mode');
-    document.body.classList.add('dark-mode');
-}
+// Só aplica o tema quando o HTML terminar de carregar (evita o erro 'null')
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('tema') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+});
 
 // Função de trocar tema
 window.alternarTema = function() {
@@ -17,7 +18,7 @@ window.alternarTema = function() {
     if (check) check.checked = document.body.classList.contains('dark-mode');
 };
 
-// Função de Sair
+// Função de Sair (Agora ela SEMPRE vai ser definida)
 window.fazerLogout = async function() {
     try {
         await window.supabaseClient.auth.signOut();
@@ -53,11 +54,7 @@ window.abrirConfig = async function() {
     }
     
     const modal = document.getElementById('modal-config');
-    if (modal) {
-        modal.classList.add('active');
-    } else {
-        console.error("ERRO: A div id='modal-config' não existe no HTML.");
-    }
+    if (modal) modal.classList.add('active');
 };
 
 window.fecharConfig = function() {
