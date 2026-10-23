@@ -26,10 +26,10 @@ function mudarAba(aba, event) {
 // CARREGAR ESTANTE (AGRUPADO POR CATEGORIA)
 // ==========================================
 async function carregarEstanteLivros() {
-    const { data: livros } = await window.supabaseClient.from('livros').select('*').order('titulo');
+    const { data: livros, error } = await window.supabaseClient.from('livros').select('*').order('titulo');
     const container = document.getElementById('estante-container');
     
-    if (!livros || livros.length === 0) {
+    if (error || !livros || livros.length === 0) {
         container.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum livro cadastrado na biblioteca ainda.</p>`;
         return;
     }
@@ -53,13 +53,12 @@ async function carregarEstanteLivros() {
         `;
 
         livrosDaCat.forEach(livro => {
-            // Define as classes CSS com base na disponibilidade
             const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
-            const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo}')"` : '';
+            // Se estiver disponível, adiciona o evento de clique. Se não, não faz nada.
+            const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')"` : '';
             
-            // Cria a lombada do livro
             html += `
-                <div class="livro-lombada ${statusClasse}" ${acaoClique} title="${livro.titulo} (${livro.autor})">
+                <div class="livro-lombada ${statusClasse}" ${acaoClique} title="${livro.titulo} (${livro.autor}) - ${livro.disponivel ? 'Clique para pegar' : 'Emprestado'}">
                     <h4>${livro.titulo}</h4>
                 </div>
             `;
@@ -151,3 +150,4 @@ async function devolverLivroAluno(empId, livroId) {
     carregarMeusEmprestimos();
     carregarEstanteLivros();
 }
+
