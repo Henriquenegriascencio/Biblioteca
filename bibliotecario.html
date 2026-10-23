@@ -75,25 +75,6 @@
 
                <!-- NOVA ABA DE USUÁRIOS -->
                <div id="aba-alunos" class="tab-content">
-                        <!-- NOVA ABA DE RELATÓRIOS -->
-        <div id="aba-relatorios" class="tab-content">
-            <h2>Histórico Geral de Empréstimos</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Acompanhe todos os empréstimos já realizados na biblioteca.</p>
-            
-            <table id="tabela-relatorios">
-                <thead>
-                    <tr>
-                        <th>Livro</th>
-                        <th>Aluno</th>
-                        <th>Empréstimo</th>
-                        <th>Prev. Devolução</th>
-                        <th>Dev. Real</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
                 <h2>Cadastrar Novo Usuário</h2>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Crie contas de acesso para alunos ou novos bibliotecários.</p>
                 <form id="form-usuario">
@@ -112,6 +93,26 @@
                         <input type="text" id="user-turma" placeholder="Turma (ex: 1º Ano A)" required>
                         <input type="text" id="user-matricula" placeholder="Matrícula (ex: 12345)" required>
                     </div>
+
+                      <!-- NOVA ABA DE RELATÓRIOS -->
+        <div id="aba-relatorios" class="tab-content">
+            <h2>Histórico Geral de Empréstimos</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Acompanhe todos os empréstimos já realizados na biblioteca.</p>
+            
+            <table id="tabela-relatorios">
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Aluno</th>
+                        <th>Empréstimo</th>
+                        <th>Prev. Devolução</th>
+                        <th>Dev. Real</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     
                     <button type="submit" style="background-color: var(--success);">Criar Conta</button>
                 </form>
