@@ -1,5 +1,9 @@
+// Variáveis globais
 let tipoUsuario = 'aluno';
 
+// ==========================================
+// 1. INICIALIZAÇÃO E PROTEÇÃO DE ROTA
+// ==========================================
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) return window.location.href = 'index.html';
@@ -9,14 +13,17 @@ async function init() {
     if (!perfil || perfil.tipo_usuario === 'aluno') return window.location.href = 'aluno.html';
 
     tipoUsuario = perfil.tipo_usuario;
-    document.getElementById('user-nome').innerText = perfil.nome;
+    document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
     document.getElementById('user-tipo').innerText = tipoUsuario === 'administrador' ? 'Administrador' : 'Bibliotecário';
 
     if (tipoUsuario === 'administrador') {
-        document.getElementById('opt-bibliotecario').style.display = 'block';
-        document.getElementById('titulo-painel').innerText = '👑 Painel do Administrador';
+        const optBib = document.getElementById('opt-bibliotecario');
+        if (optBib) optBib.style.display = 'block';
+        const titulo = document.getElementById('titulo-painel');
+        if (titulo) titulo.innerText = '👑 Painel do Administrador';
     } else {
-        document.getElementById('titulo-painel').innerText = '📚 Painel do Bibliotecário';
+        const titulo = document.getElementById('titulo-painel');
+        if (titulo) titulo.innerText = '📚 Painel do Bibliotecário';
     }
 
     carregarLivros();
@@ -26,118 +33,127 @@ async function init() {
 }
 init();
 
+// ==========================================
+// 2. CONTROLE DE ABAS
+// ==========================================
 function mudarAba(aba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(`aba-${aba}`).classList.add('active');
-    if(event) event.target.classList.add('active');
+    
+    const abaAlvo = document.getElementById(`aba-${aba}`);
+    if (abaAlvo) abaAlvo.classList.add('active');
+    
+    if (event && event.target) event.target.classList.add('active');
 }
 
-// --- LIVROS ---
+// ==========================================
+// 3. LIVROS
+// ==========================================
 async function carregarLivros() {
     const { data: livros } = await window.supabaseClient.from('livros').select('*').order('id', { ascending: false });
     const tbody = document.querySelector('#tabela-livros tbody');
     const select = document.getElementById('select-livro');
-    tbody.innerHTML = ''; select.innerHTML = '<option value="">Selecione um livro...</option>';
-    document.getElementById('total-livros').innerText = livros.length;
+    
+    if (tbody) tbody.innerHTML = ''; 
+    if (select) select.innerHTML = '<option value="">Selecione um livro...</option>';
+    
+    const totalEl = document.getElementById('total-livros');
+    if (totalEl) totalEl.innerText = livros ? livros.length : 0;
 
-    livros.forEach(l => {
-        tbody.innerHTML += `<tr><td>${l.titulo}</td><td>${l.autor}</td><td>${l.categoria}</td><td><span class="${l.disponivel ? 'status-disponivel' : 'status-emprestado'}">${l.disponivel ? 'Disponível' : 'Emprestado'}</span></td></tr>`;
-        if (l.disponivel) select.innerHTML += `<option value="${l.id}">${l.titulo}</option>`;
+    (livros || []).forEach(l => {
+        if (tbody) {
+            tbody.innerHTML += `<tr><td>${l.titulo}</td><td>${l.autor}</td><td>${l.categoria}</td><td><span class="${l.disponivel ? 'status-disponivel' : 'status-emprestado'}">${l.disponivel ? 'Disponível' : 'Emprestado'}</span></td></tr>`;
+        }
+        if (l.disponivel && select) {
+            select.innerHTML += `<option value="${l.id}">${l.titulo}</option>`;
+        }
     });
 }
 
 document.getElementById('form-livro')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    await window.supabaseClient.from('livros').insert([{ 
-        titulo: document.getElementById('titulo').value, 
-        autor: document.getElementById('autor').value, 
-        categoria: document.getElementById('categoria').value 
-    }]);
+    const titulo = document.getElementById('titulo')?.value || '';
+    const autor = document.getElementById('autor')?.value || '';
+    const categoria = document.getElementById('categoria')?.value || 'Geral';
+
+    if (!titulo || !autor) return alert("Preencha título e autor.");
+
+    const { error } = await window.supabaseClient.from('livros').insert([{ titulo, autor, categoria }]);
+    if (error) return alert("Erro ao cadastrar livro: " + error.message);
+
     document.getElementById('form-livro').reset();
     carregarLivros();
+    alert("Livro cadastrado!");
 });
 
-// --- USUÁRIOS ---
+// ==========================================
+// 4. USUÁRIOS (AQUI ESTAVA O ERRO)
+// ==========================================
 async function carregarAlunos() {
     const { data: alunos } = await window.supabaseClient.from('perfis').select('*').eq('tipo_usuario', 'aluno').order('nome');
     const select = document.getElementById('select-aluno');
+    
+    if (!select) return;
+
     select.innerHTML = '<option value="">Selecione o Aluno...</option>';
     (alunos || []).forEach(a => {
-        select.innerHTML += `<option value="${a.id}">${a.nome} ${a.turma ? '- ' + a.turma : ''}</option>`;
+        const nomeSeguro = a.nome || 'Aluno sem nome';
+        const turmaTexto = a.turma ? ` - ${a.turma}` : '';
+        select.innerHTML += `<option value="${a.id}">${nomeSeguro}${turmaTexto}</option>`;
     });
 }
 
 function alternarCamposUsuario() {
-    const isAluno = document.getElementById('user-tipo').value === 'aluno';
-    document.getElementById('campos-aluno-user').style.display = isAluno ? 'block' : 'none';
+    const selectTipo = document.getElementById('user-tipo');
+    if (!selectTipo) return;
+
+    const isAluno = selectTipo.value === 'aluno';
+    const campos = document.getElementById('campos-aluno-user');
+    if (campos) campos.style.display = isAluno ? 'block' : 'none';
 }
 
 document.getElementById('form-usuario')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // 1. Pega os elementos
+    // Captura os elementos HTML
     const elNome = document.getElementById('user-nome');
     const elEmail = document.getElementById('user-email');
     const elSenha = document.getElementById('user-senha');
     const elTipo = document.getElementById('user-tipo');
-    
-    // LOG DE TESTE NO CONSOLE (F12)
-    console.log("Valor lido no campo nome:", elNome ? elNome.value : "Elemento não encontrado");
-
-    // 2. Verifica se os elementos existem
-    if (!elNome || !elEmail || !elSenha || !elTipo) {
-        return alert("Erro interno: O formulário está com os IDs errados no HTML.");
-    }
-
-    // 3. Pega os valores limpando os espaços em branco
-    const nome = elNome.value.trim();
-    const email = elEmail.value.trim();
-    const senha = elSenha.value;
-    const tipoConta = elTipo.value;
-
-    // Pega turma e matrícula apenas se os campos existirem
     const elTurma = document.getElementById('user-turma');
     const elMatricula = document.getElementById('user-matricula');
-    const turma = elTurma ? elTurma.value.trim() : '';
-    const matricula = elMatricula ? elMatricula.value.trim() : '';
 
-    // 4. Verifica se o nome está realmente vazio
-    if (nome === '') {
-        return alert("Por favor, digite o nome do usuário.");
+    // Verifica se os elementos principais existem
+    if (!elNome || !elEmail || !elSenha || !elTipo) {
+        return alert("ERRO FATAL: Os inputs do formulário não foram encontrados. Verifique o HTML.");
     }
-    if (email === '') {
-        return alert("Por favor, digite o e-mail.");
-    }
-    if (senha.length < 6) {
-        return alert("A senha precisa ter pelo menos 6 caracteres.");
-    }
+
+    // Usa o operador '?.value' ou '|| ""' para nunca dar erro de 'undefined'
+    const nome = elNome.value ? elNome.value.trim() : '';
+    const email = elEmail.value ? elEmail.value.trim() : '';
+    const senha = elSenha.value || '';
+    const tipoConta = elTipo.value || 'aluno';
+    const turma = elTurma && elTurma.value ? elTurma.value.trim() : '';
+    const matricula = elMatricula && elMatricula.value ? elMatricula.value.trim() : '';
+
+    // Validação
+    if (nome === '') return alert("Por favor, digite o nome do usuário.");
+    if (email === '') return alert("Por favor, digite o e-mail.");
+    if (senha.length < 6) return alert("A senha precisa ter pelo menos 6 caracteres.");
 
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 5. Cria o login no Supabase Auth
+    // Cria login
     const { data, error } = await tempClient.auth.signUp({ 
         email: email, 
         password: senha, 
-        options: { 
-            data: { 
-                nome: nome, 
-                tipo_usuario: tipoConta, 
-                turma: turma, 
-                matricula: matricula 
-            } 
-        } 
+        options: { data: { nome, tipo_usuario: tipoConta, turma, matricula } } 
     });
 
-    if (error) {
-        console.error("Erro no Auth:", error);
-        return alert("Erro ao criar login: " + error.message);
-    }
+    if (error) return alert("Erro ao criar login: " + error.message);
 
-    // 6. Salva os dados na tabela perfis
+    // Salva no banco
     if (data && data.user) {
-        console.log("Usuário criado no Auth. Salvando perfil...");
-        
         const { error: erroUpsert } = await window.supabaseClient.from('perfis').upsert([{ 
             id: data.user.id, 
             nome: nome, 
@@ -146,26 +162,28 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
             matricula: matricula
         }]);
 
-        if (erroUpsert) {
-            console.error("Erro ao salvar perfil:", erroUpsert);
-            return alert("Login criado, mas erro ao salvar os dados na tabela: " + erroUpsert.message);
-        }
+        if (erroUpsert) return alert("Erro ao salvar dados: " + erroUpsert.message);
 
         alert(`Conta de ${nome} criada com sucesso!`);
         document.getElementById('form-usuario').reset();
-        if (typeof alternarCamposUsuario === 'function') alternarCamposUsuario();
-        if (typeof carregarAlunos === 'function') carregarAlunos();
+        alternarCamposUsuario();
+        carregarAlunos();
     } else {
-        alert("Erro: O Supabase não retornou o usuário. Verifique se o e-mail já está em uso.");
+        alert("Erro: E-mail já cadastrado ou inválido.");
     }
 });
 
-// --- EMPRÉSTIMOS ---
+// ==========================================
+// 5. EMPRÉSTIMOS
+// ==========================================
 async function carregarEmprestimos() {
     const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).eq('devolvido', false);
     const tbody = document.querySelector('#tabela-emprestimos tbody');
-    tbody.innerHTML = '';
-    document.getElementById('total-emprestados').innerText = data ? data.length : 0;
+    
+    if (tbody) tbody.innerHTML = '';
+    
+    const totalEl = document.getElementById('total-emprestados');
+    if (totalEl) totalEl.innerText = data ? data.length : 0;
     
     let atrasados = 0;
     const hoje = new Date(); hoje.setHours(0,0,0,0);
@@ -177,31 +195,37 @@ async function carregarEmprestimos() {
 
         let btn = `<button class="btn-devolver" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button>`;
         
-        tbody.innerHTML += `
-            <tr class="${isAtraso ? 'linha-atraso' : ''}">
-                <td>${e.livros?.titulo || 'Excluído'}</td>
-                <td>${e.perfis?.nome || e.nome_aluno || 'Desconhecido'}</td>
-                <td>${dDev.toLocaleDateString('pt-BR')}</td>
-                <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
-                <td>${btn}</td>
-            </tr>
-        `;
+        if (tbody) {
+            tbody.innerHTML += `
+                <tr class="${isAtraso ? 'linha-atraso' : ''}">
+                    <td>${e.livros?.titulo || 'Excluído'}</td>
+                    <td>${e.perfis?.nome || e.nome_aluno || 'Desconhecido'}</td>
+                    <td>${dDev.toLocaleDateString('pt-BR')}</td>
+                    <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
+                    <td>${btn}</td>
+                </tr>
+            `;
+        }
     });
-    document.getElementById('total-atrasados').innerText = atrasados;
+    
+    const atrasadosEl = document.getElementById('total-atrasados');
+    if (atrasadosEl) atrasadosEl.innerText = atrasados;
 }
 
 document.getElementById('form-emprestimo')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const livro_id = document.getElementById('select-livro').value;
-    const aluno_id = document.getElementById('select-aluno').value;
-    const data_devolucao = document.getElementById('data-devolucao').value;
-    if(!livro_id || !aluno_id) return alert("Preencha tudo!");
+    const livro_id = document.getElementById('select-livro')?.value;
+    const aluno_id = document.getElementById('select-aluno')?.value;
+    const data_devolucao = document.getElementById('data-devolucao')?.value;
+
+    if(!livro_id || !aluno_id || !data_devolucao) return alert("Preencha todos os campos!");
 
     await window.supabaseClient.from('emprestimos').insert([{ livro_id, aluno_id, data_devolucao }]);
     await window.supabaseClient.from('livros').update({ disponivel: false }).eq('id', livro_id);
     
     document.getElementById('form-emprestimo').reset();
-    carregarEmprestimos(); carregarLivros();
+    carregarEmprestimos(); 
+    carregarLivros();
 });
 
 async function devolver(empId, livroId) {
@@ -211,10 +235,15 @@ async function devolver(empId, livroId) {
     carregarEmprestimos(); carregarLivros(); carregarRelatorios();
 }
 
-// --- RELATÓRIOS ---
+// ==========================================
+// 6. RELATÓRIOS
+// ==========================================
 async function carregarRelatorios() {
     const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).order('id', { ascending: false });
     const tbody = document.querySelector('#tabela-relatorios tbody');
+    
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     (data || []).forEach(e => {
         tbody.innerHTML += `
