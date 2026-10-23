@@ -10,7 +10,10 @@ async function init() {
 
     const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
     
-    if (!perfil || perfil.tipo_usuario === 'aluno') return window.location.href = 'aluno.html';
+    // No init():
+if (!perfil || perfil.tipo_usuario !== 'bibliotecario') return window.location.href = 'index.html';
+
+
 
     tipoUsuario = perfil.tipo_usuario;
     document.getElementById('user-nome').innerText = perfil.nome || 'Usuário';
@@ -122,7 +125,8 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     const nome = (formData.get('nome') || '').trim();
     const email = (formData.get('email') || '').trim();
     const senha = formData.get('senha') || '';
-    const tipoConta = formData.get('tipo') || 'aluno';
+    // No submit do form-usuario:
+const tipoConta = 'aluno'; // Forçado a ser aluno
     const turma = (formData.get('turma') || '').trim();
     const matricula = (formData.get('matricula') || '').trim();
 

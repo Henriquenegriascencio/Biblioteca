@@ -1,14 +1,12 @@
 async function redirecionar(userId) {
-    const { data: perfil, error } = await window.supabaseClient.from('perfis').select('tipo_usuario').eq('id', userId).single();
+    const { data: perfil } = await window.supabaseClient.from('perfis').select('tipo_usuario').eq('id', userId).single();
     
-    if (error || !perfil) {
-        alert("Perfil não encontrado no banco. Contate o administrador.");
-        await window.supabaseClient.auth.signOut();
-        return;
-    }
+    if (!perfil) return window.location.href = 'index.html';
 
-    if (perfil.tipo_usuario === 'administrador' || perfil.tipo_usuario === 'bibliotecario') {
-        window.location.href = 'bibliotecario.html';
+    if (perfil.tipo_usuario === 'administrador') {
+        window.location.href = 'admin.html'; // Nova página do Admin
+    } else if (perfil.tipo_usuario === 'bibliotecario') {
+        window.location.href = 'bibliotecario.html'; // Página do Bibliotecário
     } else {
         window.location.href = 'aluno.html';
     }
@@ -21,13 +19,6 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
     const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
     
-    if (error) {
-        alert("Erro ao entrar: " + error.message);
-    } else {
-        await redirecionar(data.user.id);
-    }
-});
-
-window.supabaseClient.auth.getSession().then(({ data: { session } }) => {
-    if (session) redirecionar(session.user.id);
+    if (error) alert("Erro: " + error.message);
+    else await redirecionar(data.user.id);
 });
