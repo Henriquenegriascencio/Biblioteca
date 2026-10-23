@@ -235,7 +235,24 @@ async function carregarRelatorios() {
     if (!tbody) return;
     
     tbody.innerHTML = '';
-    (data || []).forEach(e => {
+    
+    // ==========================================
+    // AQUI ESTÁ A MÁGICA DO RELATÓRIO VAZIO
+    // Se 'data' for nulo ou estiver vazio, mostra a mensagem e para a função.
+    // ==========================================
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">
+                    Nenhum empréstimo registrado no sistema até o momento.
+                </td>
+            </tr>
+        `;
+        return; // O 'return' impede que o código tente ler dados que não existem
+    }
+
+    // Se tiver dados, ele continua e desenha a tabela normal
+    data.forEach(e => {
         tbody.innerHTML += `
             <tr>
                 <td>${e.livros?.titulo || 'Excluído'}</td>
@@ -248,8 +265,6 @@ async function carregarRelatorios() {
         `;
     });
 }
-
-
 
 // --- CONTROLE DO MODAL DE CONFIGURAÇÕES ---
 async function abrirConfig() {
