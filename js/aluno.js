@@ -10,7 +10,7 @@ async function init() {
     alunoId = session.user.id;
     document.getElementById('user-nome').innerText = p.nome;
     
-    carregarLivros();
+    carregarEstanteLivros();
     carregarMeusEmprestimos();
 }
 init();
@@ -22,22 +22,106 @@ function mudarAba(aba, event) {
     if(event) event.target.classList.add('active');
 }
 
-async function carregarLivros() {
-    const { data } = await window.supabaseClient.from('livros').select('*').order('titulo');
-    const tbody = document.querySelector('#tabela-livros tbody');
-    tbody.innerHTML = '';
-    (data || []).forEach(l => {
-        tbody.innerHTML += `<tr><td>${l.titulo}</td><td>${l.autor}</td><td>${l.categoria}</td><td><span class="${l.disponivel ? 'status-disponivel' : 'status-emprestado'}">${l.disponivel ? 'Disponível' : 'Emprestado'}</span></td></tr>`;
+// ==========================================
+// CARREGAR ESTANTE (AGRUPADO POR CATEGORIA)
+// ==========================================
+async function carregarEstanteLivros() {
+    const { data: livros } = await window.supabaseClient.from('livros').select('*').order('titulo');
+    const container = document.getElementById('estante-container');
+    
+    if (!livros || livros.length === 0) {
+        container.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum livro cadastrado na biblioteca ainda.</p>`;
+        return;
+    }
+
+    // Agrupa os livros por categoria
+    const categorias = {};
+    livros.forEach(livro => {
+        const cat = livro.categoria || 'Geral';
+        if (!categorias[cat]) categorias[cat] = [];
+        categorias[cat].push(livro);
     });
+
+    let html = '<div class="estante-wrapper">';
+
+    // Desenha cada estante
+    for (const [categoria, livrosDaCat] of Object.entries(categorias)) {
+        html += `
+            <div class="categoria-secao">
+                <h3 class="categoria-titulo">📚 ${categoria}</h3>
+                <div class="prateleira">
+        `;
+
+        livrosDaCat.forEach(livro => {
+            // Define as classes CSS com base na disponibilidade
+            const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
+            const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo}')"` : '';
+            
+            // Cria a lombada do livro
+            html += `
+                <div class="livro-lombada ${statusClasse}" ${acaoClique} title="${livro.titulo} (${livro.autor})">
+                    <h4>${livro.titulo}</h4>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
 }
 
+// ==========================================
+// PEGAR LIVRO EMPRESTADO (AUTOATENDIMENTO)
+// ==========================================
+async function pegarEmprestado(livroId, titulo) {
+    // Calcula a data de devolução (Hoje + 7 dias)
+    let dataDevolucao = new Date();
+    dataDevolucao.setDate(dataDevolucao.getDate() + 7);
+    
+    // Formata para AAAA-MM-DD para salvar no banco
+    const dataFormatada = dataDevolucao.toISOString().split('T')[0];
+    const dataExibicao = dataDevolucao.toLocaleDateString('pt-BR');
+
+    if (!confirm(`Você deseja pegar o livro "${titulo}" emprestado?\n\nO prazo de devolução é de 7 dias.\nData limite: ${dataExibicao}`)) {
+        return;
+    }
+
+    // 1. Registra o empréstimo no banco
+    const { error: erroEmp } = await window.supabaseClient.from('emprestimos').insert([{ 
+        livro_id: livroId, 
+        aluno_id: alunoId, 
+        data_devolucao: dataFormatada,
+        nome_aluno: document.getElementById('user-nome').innerText // Salva o nome como backup
+    }]);
+
+    if (erroEmp) return alert("Erro ao pegar livro: " + erroEmp.message);
+
+    // 2. Atualiza o livro para Indisponível
+    await window.supabaseClient.from('livros').update({ disponivel: false }).eq('id', livroId);
+
+    alert(`Boa leitura! O livro "${titulo}" estará disponível para você até ${dataExibicao}.`);
+    
+    // 3. Atualiza a tela
+    carregarEstanteLivros();
+    carregarMeusEmprestimos();
+    mudarAba('meus-emprestimos', { target: document.querySelectorAll('.tab-btn')[1] });
+}
+
+// ==========================================
+// MEUS EMPRÉSTIMOS
+// ==========================================
 async function carregarMeusEmprestimos() {
     const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo)`).eq('devolvido', false).eq('aluno_id', alunoId);
     const tbody = document.querySelector('#tabela-emprestimos tbody');
     tbody.innerHTML = '';
     
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Você não tem empréstimos ativos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Você não tem empréstimos ativos no momento. Explore a estante!</td></tr>`;
         return;
     }
     
@@ -52,7 +136,7 @@ async function carregarMeusEmprestimos() {
                 <td>${e.livros?.titulo}</td>
                 <td>${dDev.toLocaleDateString('pt-BR')}</td>
                 <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
-                <td><button class="btn-devolver" onclick="devolverLivroAluno(${e.id}, ${e.livro_id})">Devolver</button></td>
+                <td><button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolverLivroAluno(${e.id}, ${e.livro_id})">Devolver</button></td>
             </tr>
         `;
     });
@@ -65,5 +149,5 @@ async function devolverLivroAluno(empId, livroId) {
     await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
     alert("Devolução registrada!");
     carregarMeusEmprestimos();
-    carregarLivros();
+    carregarEstanteLivros();
 }
