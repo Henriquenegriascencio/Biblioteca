@@ -1,11 +1,31 @@
+let tipoUsuario = 'aluno';
+
+// Variáveis para guardar os dados e permitir filtragem rápida
+let dadosLivros = [];
+let dadosEmprestimos = [];
+let dadosUsuarios = [];
+let dadosRelatorios = [];
+
+// ==========================================
+// 1. INICIALIZAÇÃO
+// ==========================================
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) return window.location.href = 'index.html';
+
     const { data: p } = await window.supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
-    if (!p || p.tipo_usuario !== 'bibliotecario') return window.location.href = 'index.html'; // Expulsa Admin
+    
+    // Se não for bibliotecário, é chutado de volta
+    if (!p || p.tipo_usuario !== 'bibliotecario') return window.location.href = 'index.html';
 
     document.getElementById('user-nome').innerText = p.nome;
-    carregarLivros(); carregarAlunos(); carregarEmprestimos(); carregarRelatorios(); carregarTodosUsuarios();
+    
+    // Carrega todas as tabelas
+    carregarLivros();
+    carregarAlunosSelect();
+    carregarUsuarios();
+    carregarEmprestimos();
+    carregarRelatorios();
 }
 init();
 
@@ -16,40 +36,93 @@ function mudarAba(aba, event) {
     if(event) event.target.classList.add('active');
 }
 
+// ==========================================
+// 2. LIVROS (Filtrar por Título, Autor, Categoria ou Status)
+// ==========================================
 async function carregarLivros() {
     const { data } = await window.supabaseClient.from('livros').select('*').order('id', { ascending: false });
-    const tbody = document.querySelector('#tabela-livros tbody');
+    dadosLivros = data || [];
+    
+    // Alimenta o Select de Empréstimos
     const select = document.getElementById('select-livro');
-    tbody.innerHTML = ''; select.innerHTML = '<option value="">Livro...</option>';
-    document.getElementById('total-livros').innerText = data ? data.length : 0;
-    (data || []).forEach(l => {
+    if (select) {
+        select.innerHTML = '<option value="">Selecione um livro...</option>';
+        dadosLivros.filter(l => l.disponivel).forEach(l => select.innerHTML += `<option value="${l.id}">${l.titulo}</option>`);
+    }
+    
+    renderizarLivros(dadosLivros);
+}
+
+function filtrarLivros() {
+    const termo = document.getElementById('filtro-livros').value.toLowerCase();
+    const filtrados = dadosLivros.filter(l => 
+        l.titulo.toLowerCase().includes(termo) || 
+        l.autor.toLowerCase().includes(termo) || 
+        (l.categoria || '').toLowerCase().includes(termo) ||
+        (l.disponivel ? 'disponivel' : 'emprestado').includes(termo)
+    );
+    renderizarLivros(filtrados);
+}
+
+function renderizarLivros(lista) {
+    const tbody = document.querySelector('#tabela-livros tbody');
+    tbody.innerHTML = '';
+    document.getElementById('total-livros').innerText = dadosLivros.length;
+
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum livro encontrado.</td></tr>`;
+        return;
+    }
+
+    lista.forEach(l => {
         tbody.innerHTML += `<tr><td>${l.titulo}</td><td>${l.autor}</td><td>${l.categoria}</td><td><span class="${l.disponivel ? 'status-disponivel' : 'status-emprestado'}">${l.disponivel ? 'Disponível' : 'Emprestado'}</span></td></tr>`;
-        if (l.disponivel) select.innerHTML += `<option value="${l.id}">${l.titulo}</option>`;
     });
 }
 
 document.getElementById('form-livro')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     await window.supabaseClient.from('livros').insert([{ titulo: document.getElementById('titulo').value, autor: document.getElementById('autor').value, categoria: document.getElementById('categoria').value }]);
-    document.getElementById('form-livro').reset(); carregarLivros(); alert("Livro cadastrado!");
+    document.getElementById('form-livro').reset(); 
+    alert("Livro cadastrado!");
+    carregarLivros();
 });
 
-async function carregarAlunos() {
+// ==========================================
+// 3. USUÁRIOS (Filtrar por Nome, Turma ou Matrícula)
+// ==========================================
+async function carregarAlunosSelect() {
     const { data } = await window.supabaseClient.from('perfis').select('*').eq('tipo_usuario', 'aluno').order('nome');
     const select = document.getElementById('select-aluno');
-    select.innerHTML = '<option value="">Aluno...</option>';
-    (data || []).forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome} ${a.turma ? '- ' + a.turma : ''}</option>`);
+    if (select) {
+        select.innerHTML = '<option value="">Selecione o Aluno...</option>';
+        (data || []).forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome} ${a.turma ? '- ' + a.turma : ''}</option>`);
+    }
 }
 
-function alternarCamposUsuario() {
-    document.getElementById('campos-aluno-user').style.display = 'block'; // Sempre visível, pois só cria aluno
-}
-
-async function carregarTodosUsuarios() {
+async function carregarUsuarios() {
     const { data } = await window.supabaseClient.from('perfis').select('*').eq('tipo_usuario', 'aluno').order('nome');
+    dadosUsuarios = data || [];
+    renderizarUsuarios(dadosUsuarios);
+}
+
+function filtrarUsuarios() {
+    const termo = document.getElementById('filtro-usuarios').value.toLowerCase();
+    const filtrados = dadosUsuarios.filter(u => 
+        u.nome.toLowerCase().includes(termo) || 
+        (u.turma || '').toLowerCase().includes(termo) || 
+        (u.matricula || '').toLowerCase().includes(termo)
+    );
+    renderizarUsuarios(filtrados);
+}
+
+function renderizarUsuarios(lista) {
     const tbody = document.querySelector('#tabela-usuarios tbody');
     tbody.innerHTML = '';
-    (data || []).forEach(u => {
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Nenhum aluno encontrado.</td></tr>`;
+        return;
+    }
+    lista.forEach(u => {
         tbody.innerHTML += `<tr><td>${u.nome}</td><td>${u.turma || '-'}</td><td>${u.matricula || '-'}</td></tr>`;
     });
 }
@@ -66,7 +139,6 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     if (senha.length < 6) return alert("Senha muito curta.");
 
     const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // O BIBLIOTECÁRIO SÓ PODE CRIAR ALUNO (Forçado no código)
     const { data, error } = await tempClient.auth.signUp({ email, password: senha, options: { data: { nome, tipo_usuario: 'aluno', turma, matricula } } });
     
     if (error) return alert("Erro: " + error.message);
@@ -74,18 +146,59 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     if (data.user) {
         await window.supabaseClient.from('perfis').upsert([{ id: data.user.id, nome, tipo_usuario: 'aluno', turma, matricula }]);
         alert(`Aluno ${nome} criado!`);
-        document.getElementById('form-usuario').reset(); carregarTodosUsuarios(); carregarAlunos();
+        document.getElementById('form-usuario').reset(); 
+        carregarUsuarios(); 
+        carregarAlunosSelect();
     }
 });
 
+// ==========================================
+// 4. EMPRÉSTIMOS (Filtrar por Livro, Aluno ou Status)
+// ==========================================
 async function carregarEmprestimos() {
     const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).eq('devolvido', false);
-    const tbody = document.querySelector('#tabela-emprestimos tbody');
-    tbody.innerHTML = ''; document.getElementById('total-emprestados').innerText = data ? data.length : 0;
-    let atrasados = 0; const hoje = new Date(); hoje.setHours(0,0,0,0);
-    (data || []).forEach(e => {
+    dadosEmprestimos = data || [];
+    renderizarEmprestimos(dadosEmprestimos);
+}
+
+function filtrarEmprestimos() {
+    const termo = document.getElementById('filtro-emprestimos').value.toLowerCase();
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+    const filtrados = dadosEmprestimos.filter(e => {
+        const titulo = e.livros?.titulo?.toLowerCase() || '';
+        const nome = (e.perfis?.nome || e.nome_aluno || '').toLowerCase();
         const dDev = new Date(e.data_devolucao + 'T00:00:00');
-        let isAtraso = dDev < hoje; if (isAtraso) atrasados++;
+        const isAtraso = dDev < hoje;
+        const status = isAtraso ? 'atrasado' : 'em dia';
+
+        return titulo.includes(termo) || nome.includes(termo) || status.includes(termo);
+    });
+    renderizarEmprestimos(filtrados);
+}
+
+function renderizarEmprestimos(lista) {
+    const tbody = document.querySelector('#tabela-emprestimos tbody');
+    tbody.innerHTML = ''; 
+    document.getElementById('total-emprestados').innerText = dadosEmprestimos.length;
+    
+    let atrasados = 0; 
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    
+    dadosEmprestimos.forEach(e => {
+        const dDev = new Date(e.data_devolucao + 'T00:00:00');
+        if (dDev < hoje) atrasados++;
+    });
+    document.getElementById('total-atrasados').innerText = atrasados;
+
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Nenhum empréstimo encontrado.</td></tr>`;
+        return;
+    }
+
+    lista.forEach(e => {
+        const dDev = new Date(e.data_devolucao + 'T00:00:00');
+        let isAtraso = dDev < hoje;
         tbody.innerHTML += `
             <tr class="${isAtraso ? 'linha-atraso' : ''}">
                 <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
@@ -94,7 +207,6 @@ async function carregarEmprestimos() {
                 <td><button class="btn-devolver" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button></td>
             </tr>`;
     });
-    document.getElementById('total-atrasados').innerText = atrasados;
 }
 
 document.getElementById('form-emprestimo')?.addEventListener('submit', async (e) => {
@@ -105,25 +217,52 @@ document.getElementById('form-emprestimo')?.addEventListener('submit', async (e)
     if(!livro_id || !aluno_id) return alert("Preencha tudo!");
     await window.supabaseClient.from('emprestimos').insert([{ livro_id, aluno_id, data_devolucao }]);
     await window.supabaseClient.from('livros').update({ disponivel: false }).eq('id', livro_id);
-    document.getElementById('form-emprestimo').reset(); carregarEmprestimos(); carregarLivros();
+    document.getElementById('form-emprestimo').reset(); 
+    carregarEmprestimos(); 
+    carregarLivros();
 });
 
 async function devolver(empId, livroId) {
     const hoje = new Date().toISOString().split('T')[0];
     await window.supabaseClient.from('emprestimos').update({ devolvido: true, data_devolucao_real: hoje }).eq('id', empId);
     await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
-    carregarEmprestimos(); carregarLivros(); carregarRelatorios();
+    carregarEmprestimos(); 
+    carregarLivros(); 
+    carregarRelatorios();
 }
 
+// ==========================================
+// 5. RELATÓRIOS (Filtrar por Livro, Aluno, Data ou Status)
+// ==========================================
 async function carregarRelatorios() {
     const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).order('id', { ascending: false });
+    dadosRelatorios = data || [];
+    renderizarRelatorios(dadosRelatorios);
+}
+
+function filtrarRelatorios() {
+    const termo = document.getElementById('filtro-relatorios').value.toLowerCase();
+    const filtrados = dadosRelatorios.filter(e => {
+        const titulo = e.livros?.titulo?.toLowerCase() || '';
+        const nome = (e.perfis?.nome || e.nome_aluno || '').toLowerCase();
+        const dataEmp = new Date(e.criado_em).toLocaleDateString('pt-BR');
+        const status = e.devolvido ? 'devolvido' : 'ativo';
+        
+        return titulo.includes(termo) || nome.includes(termo) || dataEmp.includes(termo) || status.includes(termo);
+    });
+    renderizarRelatorios(filtrados);
+}
+
+function renderizarRelatorios(lista) {
     const tbody = document.querySelector('#tabela-relatorios tbody');
     tbody.innerHTML = '';
-    if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Nenhum empréstimo registrado no sistema até o momento.</td></tr>`;
+    
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado.</td></tr>`;
         return;
     }
-    data.forEach(e => {
+    
+    lista.forEach(e => {
         tbody.innerHTML += `
             <tr>
                 <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
