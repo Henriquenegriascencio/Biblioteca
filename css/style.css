@@ -268,3 +268,19 @@ tr:hover {
     /* Uma cor de marrom super transparente, que funciona no modo claro */
     background: rgba(139, 90, 43, 0.05); 
 }
+
+.btn-action {
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-action:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

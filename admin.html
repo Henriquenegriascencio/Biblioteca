@@ -12,6 +12,52 @@
     <script src="js/config.js" defer></script>
     <script src="js/admin.js" defer></script>
 </head>
+
+    <!-- MODAL DE EDITAR LIVRO -->
+    <div id="modal-livro" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Editar Livro</h2>
+            <form id="form-edit-livro">
+                <input type="hidden" id="edit-livro-id">
+                <input type="text" id="edit-livro-titulo" placeholder="Título" required>
+                <input type="text" id="edit-livro-autor" placeholder="Autor" required>
+                <select id="edit-livro-categoria">
+                    <option value="Didático">Didático</option>
+                    <option value="Ficção">Ficção</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Geral">Geral</option>
+                </select>
+                <button type="submit" style="background: var(--success);">Salvar Alterações</button>
+                <button type="button" class="close-btn" onclick="fecharModal('modal-livro')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDITAR USUÁRIO -->
+    <div id="modal-usuario" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Editar Usuário</h2>
+            <form id="form-edit-usuario">
+                <input type="hidden" id="edit-user-id">
+                <input type="text" id="edit-user-nome" placeholder="Nome Completo" required>
+                
+                <select id="edit-user-tipo">
+                    <option value="aluno">Aluno</option>
+                    <option value="bibliotecario">Bibliotecário</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+
+                <input type="text" id="edit-user-turma" placeholder="Turma">
+                <input type="text" id="edit-user-matricula" placeholder="Matrícula">
+                
+                <p style="font-size: 11px; color: var(--danger); margin-top: 5px;">* Senhas e e-mails não podem ser alterados por aqui.</p>
+                
+                <button type="submit" style="background: var(--success);">Salvar Alterações</button>
+                <button type="button" class="close-btn" onclick="fecharModal('modal-usuario')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
 <body>
     <div class="container">
         <div class="user-bar">
@@ -67,7 +113,7 @@
                     </div>
         
                     <table id="tabela-livros">
-                        <thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -156,8 +202,8 @@
                         <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
                     </div>
         
-                    <table id="tabela-relatorios">
-                        <thead><tr><th>Livro</th><th>Aluno</th><th>Empréstimo</th><th>Previsto</th><th>Devolvido</th><th>Status</th></tr></thead>
+                    <table id="tabela-usuarios">
+                        <thead><tr><th>Nome</th><th>Tipo</th><th>Turma</th><th>Matrícula</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
