@@ -165,10 +165,15 @@ async function carregarMeusEmprestimos() {
     tbody.innerHTML = '';
     
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Você não tem empréstimos ativos no momento. Explore a estante!</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; color: var(--text-muted); padding: 30px; font-style: italic;">
+                    Você não tem empréstimos ativos no momento. Explore a estante!
+                </td>
+            </tr>
+        `;
         return;
     }
-    
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     
     data.forEach(e => {

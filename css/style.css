@@ -183,6 +183,11 @@ body.dark-mode input, body.dark-mode select { background-color: #1A1512; }
 body.dark-mode .livro-tooltip { background: #3E322A; border-color: #5A4A3E; }
 body.dark-mode .livro-tooltip::after { border-color: #3E322A transparent transparent transparent; }
 body.dark-mode th { background: #2D241E; }
+/* Adicione dentro do bloco body.dark-mode { ... } ou junto dele */
+body.dark-mode tr:hover { 
+    /* No modo escuro, o hover fica com um tom de dourado/madeira bem suave */
+    background: rgba(212, 163, 115, 0.1); 
+}
 
 /* Modal */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
@@ -237,4 +242,16 @@ body.dark-mode .search-container input {
 }
 body.dark-mode .search-container input:focus {
     box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.2);
+}
+
+/* Tabelas */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-main); }
+th { background: #F3EBE1; color: var(--primary); text-transform: uppercase; font-size: 12px; font-weight: 700; }
+
+/* Linhas da tabela e o efeito de passar o mouse */
+tr { transition: background 0.2s ease; }
+tr:hover { 
+    /* Uma cor de marrom super transparente, que funciona no modo claro */
+    background: rgba(139, 90, 43, 0.05); 
 }
