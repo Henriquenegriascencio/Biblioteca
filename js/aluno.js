@@ -22,21 +22,58 @@ function mudarAba(aba, event) {
     if(event) event.target.classList.add('active');
 }
 
-// ==========================================
-// CARREGAR ESTANTE (AGRUPADO POR CATEGORIA)
-// ==========================================
+// Variável global para guardar os livros e facilitar a pesquisa
+let todosOsLivros = [];
+
+// 1. BUSCA NO BANCO E SALVA NA MEMÓRIA
 async function carregarEstanteLivros() {
     const { data: livros, error } = await window.supabaseClient.from('livros').select('*').order('titulo');
     const container = document.getElementById('estante-container');
     
     if (error || !livros || livros.length === 0) {
-        container.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum livro cadastrado na biblioteca ainda.</p>`;
+        container.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum livro cadastrado ainda.</p>`;
+        return;
+    }
+
+    // Salva a lista completa
+    todosOsLivros = livros;
+    
+    // Manda desenhar a estante com todos os livros
+    renderizarEstante(todosOsLivros);
+}
+
+// 2. FILTRA OS LIVROS CONFORME DIGITA NA LUPA
+function filtrarLivros() {
+    const termo = document.getElementById('search-input').value.toLowerCase().trim();
+    
+    // Se a barra estiver vazia, mostra todos
+    if (termo === '') {
+        renderizarEstante(todosOsLivros);
+        return;
+    }
+
+    // Filtra por Título, Autor ou Categoria
+    const livrosFiltrados = todosOsLivros.filter(livro => 
+        livro.titulo.toLowerCase().includes(termo) || 
+        livro.autor.toLowerCase().includes(termo) || 
+        (livro.categoria && livro.categoria.toLowerCase().includes(termo))
+    );
+
+    renderizarEstante(livrosFiltrados);
+}
+
+// 3. DESENHA A ESTANTE NA TELA (Separa por categoria e monta as prateleiras)
+function renderizarEstante(livrosParaMostrar) {
+    const container = document.getElementById('estante-container');
+    
+    if (livrosParaMostrar.length === 0) {
+        container.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum livro encontrado com esse termo.</p>`;
         return;
     }
 
     // Agrupa os livros por categoria
     const categorias = {};
-    livros.forEach(livro => {
+    livrosParaMostrar.forEach(livro => {
         const cat = livro.categoria || 'Geral';
         if (!categorias[cat]) categorias[cat] = [];
         categorias[cat].push(livro);
@@ -55,13 +92,11 @@ async function carregarEstanteLivros() {
             const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
             const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')"` : '';
             
-            // Sorteia uma cor de 1 a 6 para a lombada do livro
             const corAleatoria = Math.floor(Math.random() * 6) + 1;
             const classeCor = `livro-cor-${corAleatoria}`;
             
             html += `
                 <div class="livro-wrapper">
-                    <!-- Aplica a classe da cor sorteada junto com o status -->
                     <div class="livro-lombada ${classeCor} ${statusClasse}" ${acaoClique}>
                         <h4>${livro.titulo}</h4>
                     </div>
