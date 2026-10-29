@@ -284,3 +284,173 @@ tr:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
+/* =========================================
+   NOVO LAYOUT: SIDEBAR (MENU LATERAL)
+   ========================================= */
+   body {
+    /* Reset de padding e height para o layout de tela cheia */
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden; 
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* --- MENU LATERAL --- */
+.sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.05);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.sidebar-brand {
+    padding: 30px 20px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.nav-link span { font-size: 20px; }
+
+.nav-link:hover {
+    background: rgba(139, 90, 43, 0.08);
+    color: var(--primary);
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background: var(--primary);
+    color: #FFF;
+    box-shadow: 0 4px 10px rgba(139, 90, 43, 0.3);
+}
+
+/* Rodapé do Menu (User Info + Botões) */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-color);
+}
+
+.user-info {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.user-info strong {
+    display: block;
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+.footer-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.footer-btns .btn-icon {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+.footer-btns .btn-icon:hover { background: var(--bg-color); }
+
+.footer-btns .btn-sair-sidebar {
+    flex: 1;
+    background: #FEE2E2;
+    color: var(--danger);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.footer-btns .btn-sair-sidebar:hover { background: #FCA5A5; }
+
+/* --- CONTEÚDO PRINCIPAL --- */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    background: var(--bg-color);
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.top-header h1 {
+    font-size: 28px;
+    color: var(--primary);
+}
+
+/* Ajustes nas abas antigas (agora só o conteúdo) */
+.tab-content { display: none; animation: fadeIn 0.4s ease; }
+.tab-content.active { display: block; }
+
+/* Modo Escuro na Sidebar */
+body.dark-mode .sidebar { border-right-color: #3E322A; }
+body.dark-mode .sidebar-footer { background: #1A1512; }
+body.dark-mode .nav-link:hover { background: rgba(212, 163, 115, 0.1); }
+body.dark-mode .nav-link.active { background: var(--primary); color: #1A1512; }
+body.dark-mode .footer-btns .btn-icon { background: #241D19; border-color: #3E322A; }
+body.dark-mode .footer-btns .btn-sair-sidebar { background: #451a1a; }
+
+/* Responsividade (Celular) */
+@media (max-width: 768px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 2px solid var(--border); }
+    .sidebar-nav { flex-direction: row; overflow-x: auto; padding: 10px; }
+    .nav-link { white-space: nowrap; padding: 10px 15px; }
+    .sidebar-footer { display: none; /* Esconde no celular para poupar espaço, ou coloque no topo */ }
+    .main-content { padding: 20px; }
+}

@@ -4,16 +4,201 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Painel - Administrador</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js" defer></script>
     <script src="js/admin.js" defer></script>
 </head>
+<body>
+    <div class="layout">
+        
+        <!-- MENU LATERAL -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">👑 BiblioAdmin</div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-link active" onclick="mudarAba('livros', event)">
+                    <span>📖</span> Acervo
+                </button>
+                <button class="nav-link" onclick="mudarAba('emprestimos', event)">
+                    <span>🔄</span> Empréstimos
+                </button>
+                <button class="nav-link" onclick="mudarAba('usuarios', event)">
+                    <span>👥</span> Usuários
+                </button>
+                <button class="nav-link" onclick="mudarAba('relatorios', event)">
+                    <span>📊</span> Relatórios
+                </button>
+            </nav>
 
-    <!-- MODAL DE EDITAR LIVRO -->
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span>Olá,</span>
+                    <strong id="user-nome">Carregando...</strong>
+                </div>
+                <div class="footer-btns">
+                    <button class="btn-icon" onclick="abrirConfig()" title="Configurações">⚙️</button>
+                    <button class="btn-sair-sidebar" onclick="fazerLogout()">Sair</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="top-header">
+                <h1>Super Painel de Controle</h1>
+            </div>
+
+            <div class="dashboard">
+                <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
+                <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
+                <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
+            </div>
+
+            <!-- ABA LIVROS -->
+            <div id="aba-livros" class="tab-content active">
+                <h2>Cadastrar Novo Livro</h2>
+                <form id="form-livro">
+                    <input type="text" id="titulo" placeholder="Título" required>
+                    <input type="text" id="autor" placeholder="Autor" required>
+                    <select id="categoria">
+                        <option value="Didático">Didático</option>
+                        <option value="Ficção">Ficção</option>
+                        <option value="Infantil">Infantil</option>
+                        <option value="Geral">Geral</option>
+                    </select>
+                    <button type="submit">Cadastrar</button>
+                </form>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+                <h2>Acervo</h2>
+                
+                <div class="search-container">
+                    <select id="select-filtro-livros" class="filter-select" onchange="filtrarLivros()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="titulo">Título</option>
+                        <option value="autor">Autor</option>
+                        <option value="categoria">Categoria</option>
+                        <option value="status">Status</option>
+                    </select>
+                    <input type="text" id="filtro-livros" placeholder="Digite o termo de busca..." oninput="filtrarLivros()">
+                </div>
+
+                <table id="tabela-livros">
+                    <thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- ABA EMPRÉSTIMOS -->
+            <div id="aba-emprestimos" class="tab-content">
+                <h2>Registrar Empréstimo</h2>
+                <form id="form-emprestimo">
+                    <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
+                    <select id="select-livro" required><option value="">Selecione um livro...</option></select>
+                    <input type="date" id="data-devolucao" required>
+                    <button type="submit">Confirmar</button>
+                </form>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+                <h2>Empréstimos Ativos</h2>
+
+                <div class="search-container">
+                    <select id="select-filtro-emprestimos" class="filter-select" onchange="filtrarEmprestimos()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="livro">Livro</option>
+                        <option value="aluno">Aluno</option>
+                        <option value="status">Status</option>
+                    </select>
+                    <input type="text" id="filtro-emprestimos" placeholder="Digite o termo de busca..." oninput="filtrarEmprestimos()">
+                </div>
+
+                <table id="tabela-emprestimos">
+                    <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- ABA USUÁRIOS -->
+            <div id="aba-usuarios" class="tab-content">
+                <h2>Cadastrar Novo Usuário</h2>
+                <form id="form-usuario">
+                    <input type="text" id="user-nome" name="nome" placeholder="Nome Completo" required>
+                    <input type="email" id="user-email" name="email" placeholder="E-mail" required>
+                    <input type="password" id="user-senha" name="senha" placeholder="Senha (mín 6)" required>
+                    
+                    <select id="user-tipo" name="tipo" onchange="alternarCamposUsuario()">
+                        <option value="aluno">Aluno</option>
+                        <option value="bibliotecario">Bibliotecário</option>
+                    </select>
+
+                    <div id="campos-aluno-user">
+                        <input type="text" id="user-turma" name="turma" placeholder="Turma">
+                        <input type="text" id="user-matricula" name="matricula" placeholder="Matrícula">
+                    </div>
+                    <button type="submit">Criar Conta</button>
+                </form>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+                <h2>Todos os Usuários do Sistema</h2>
+
+                <div class="search-container">
+                    <select id="select-filtro-usuarios" class="filter-select" onchange="filtrarUsuarios()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="nome">Nome</option>
+                        <option value="tipo">Tipo (Admin/Biblio/Aluno)</option>
+                        <option value="turma">Turma</option>
+                        <option value="matricula">Matrícula</option>
+                    </select>
+                    <input type="text" id="filtro-usuarios" placeholder="Digite o termo de busca..." oninput="filtrarUsuarios()">
+                </div>
+
+                <table id="tabela-usuarios">
+                    <thead><tr><th>Nome</th><th>Tipo</th><th>Turma</th><th>Matrícula</th><th>Ações</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- ABA RELATÓRIOS -->
+            <div id="aba-relatorios" class="tab-content">
+                <h2>Histórico Geral</h2>
+
+                <div class="search-container">
+                    <select id="select-filtro-relatorios" class="filter-select" onchange="filtrarRelatorios()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="livro">Livro</option>
+                        <option value="aluno">Aluno</option>
+                        <option value="status">Status (Devolvido/Ativo)</option>
+                        <option value="data">Data do Empréstimo</option>
+                    </select>
+                    <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
+                </div>
+
+                <table id="tabela-relatorios">
+                    <thead><tr><th>Livro</th><th>Aluno</th><th>Empréstimo</th><th>Previsto</th><th>Devolvido</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAIS (Mantidos no final) -->
+    <div id="modal-config" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Meu Perfil</h2>
+            <p><strong>Nome:</strong> <span id="conf-nome">...</span></p>
+            <p><strong>E-mail:</strong> <span id="conf-email">...</span></p>
+            <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;"> Ativar Modo Escuro 🌙
+            </label>
+            <button class="close-btn" onclick="fecharConfig()">Fechar</button>
+        </div>
+    </div>
+
     <div id="modal-livro" class="modal-overlay">
         <div class="modal-box">
             <h2>Editar Livro</h2>
@@ -33,197 +218,24 @@
         </div>
     </div>
 
-    <!-- MODAL DE EDITAR USUÁRIO -->
     <div id="modal-usuario" class="modal-overlay">
         <div class="modal-box">
             <h2>Editar Usuário</h2>
             <form id="form-edit-usuario">
                 <input type="hidden" id="edit-user-id">
                 <input type="text" id="edit-user-nome" placeholder="Nome Completo" required>
-                
                 <select id="edit-user-tipo">
                     <option value="aluno">Aluno</option>
                     <option value="bibliotecario">Bibliotecário</option>
                     <option value="administrador">Administrador</option>
                 </select>
-
                 <input type="text" id="edit-user-turma" placeholder="Turma">
                 <input type="text" id="edit-user-matricula" placeholder="Matrícula">
-                
                 <p style="font-size: 11px; color: var(--danger); margin-top: 5px;">* Senhas e e-mails não podem ser alterados por aqui.</p>
-                
                 <button type="submit" style="background: var(--success);">Salvar Alterações</button>
                 <button type="button" class="close-btn" onclick="fecharModal('modal-usuario')">Cancelar</button>
             </form>
         </div>
     </div>
-
-<body>
-    <div class="container">
-        <div class="user-bar">
-            <span>Olá, <strong id="user-nome">...</strong> (👑 Administrador)</span>
-            <div>
-                <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
-                <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
-            </div>
-        </div>
-
-        <div class="header"><h1>👑 Super Painel de Controle</h1></div>
-
-        <div class="dashboard">
-            <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
-            <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
-            <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('livros', event)">Acervo</button>
-            <button class="tab-btn" onclick="mudarAba('emprestimos', event)">Empréstimos</button>
-            <button class="tab-btn" onclick="mudarAba('usuarios', event)">Usuários</button>
-            <button class="tab-btn" onclick="mudarAba('relatorios', event)">Relatórios</button>
-        </div>
-
-                <!-- ABA LIVROS -->
-                <div id="aba-livros" class="tab-content active">
-                    <h2>Cadastrar Novo Livro</h2>
-                    <form id="form-livro">
-                        <input type="text" id="titulo" placeholder="Título" required>
-                        <input type="text" id="autor" placeholder="Autor" required>
-                        <select id="categoria">
-                            <option value="Didático">Didático</option>
-                            <option value="Ficção">Ficção</option>
-                            <option value="Infantil">Infantil</option>
-                            <option value="Geral">Geral</option>
-                        </select>
-                        <button type="submit">Cadastrar</button>
-                    </form>
-                    
-                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-                    <h2>Acervo</h2>
-                    
-                    <div class="search-container">
-                        <select id="select-filtro-livros" class="filter-select" onchange="filtrarLivros()">
-                            <option value="todos">Filtrar por...</option>
-                            <option value="titulo">Título</option>
-                            <option value="autor">Autor</option>
-                            <option value="categoria">Categoria</option>
-                            <option value="status">Status</option>
-                        </select>
-                        <input type="text" id="filtro-livros" placeholder="Digite o termo de busca..." oninput="filtrarLivros()">
-                    </div>
-        
-                    <table id="tabela-livros">
-                        <thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-        
-                <!-- ABA EMPRÉSTIMOS -->
-                <div id="aba-emprestimos" class="tab-content">
-                    <h2>Registrar Empréstimo</h2>
-                    <form id="form-emprestimo">
-                        <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
-                        <select id="select-livro" required><option value="">Selecione um livro...</option></select>
-                        <input type="date" id="data-devolucao" required>
-                        <button type="submit">Confirmar</button>
-                    </form>
-                    
-                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-                    <h2>Empréstimos Ativos</h2>
-        
-                    <div class="search-container">
-                        <select id="select-filtro-emprestimos" class="filter-select" onchange="filtrarEmprestimos()">
-                            <option value="todos">Filtrar por...</option>
-                            <option value="livro">Livro</option>
-                            <option value="aluno">Aluno</option>
-                            <option value="status">Status</option>
-                        </select>
-                        <input type="text" id="filtro-emprestimos" placeholder="Digite o termo de busca..." oninput="filtrarEmprestimos()">
-                    </div>
-        
-                    <table id="tabela-emprestimos">
-                        <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-        
-                <!-- ABA USUÁRIOS -->
-                <div id="aba-usuarios" class="tab-content">
-                    <h2>Cadastrar Novo Usuário</h2>
-                    <form id="form-usuario">
-                        <input type="text" id="user-nome" name="nome" placeholder="Nome Completo" required>
-                        <input type="email" id="user-email" name="email" placeholder="E-mail" required>
-                        <input type="password" id="user-senha" name="senha" placeholder="Senha (mín 6)" required>
-                        
-                        <select id="user-tipo" name="tipo" onchange="alternarCamposUsuario()">
-                            <option value="aluno">Aluno</option>
-                            <option value="bibliotecario">Bibliotecário</option>
-                        </select>
-        
-                        <div id="campos-aluno-user">
-                            <input type="text" id="user-turma" name="turma" placeholder="Turma">
-                            <input type="text" id="user-matricula" name="matricula" placeholder="Matrícula">
-                        </div>
-                        <button type="submit">Criar Conta</button>
-                    </form>
-                    
-                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-                    <h2>Todos os Usuários do Sistema</h2>
-        
-                    <div class="search-container">
-                        <select id="select-filtro-usuarios" class="filter-select" onchange="filtrarUsuarios()">
-                            <option value="todos">Filtrar por...</option>
-                            <option value="nome">Nome</option>
-                            <option value="tipo">Tipo (Admin/Biblio/Aluno)</option>
-                            <option value="turma">Turma</option>
-                            <option value="matricula">Matrícula</option>
-                        </select>
-                        <input type="text" id="filtro-usuarios" placeholder="Digite o termo de busca..." oninput="filtrarUsuarios()">
-                    </div>
-        
-                    <table id="tabela-usuarios">
-                        <thead><tr><th>Nome</th><th>Tipo</th><th>Turma</th><th>Matrícula</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-        
-                <!-- ABA RELATÓRIOS -->
-                <div id="aba-relatorios" class="tab-content">
-                    <h2>Histórico Geral</h2>
-        
-                    <div class="search-container">
-                        <select id="select-filtro-relatorios" class="filter-select" onchange="filtrarRelatorios()">
-                            <option value="todos">Filtrar por...</option>
-                            <option value="livro">Livro</option>
-                            <option value="aluno">Aluno</option>
-                            <option value="status">Status (Devolvido/Ativo)</option>
-                            <option value="data">Data do Empréstimo</option>
-                        </select>
-                        <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
-                    </div>
-        
-                    <table id="tabela-usuarios">
-                        <thead><tr><th>Nome</th><th>Tipo</th><th>Turma</th><th>Matrícula</th><th>Ações</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL DE CONFIGURAÇÕES (É ISSO QUE ESTAVA FALTANDO) -->
-    <!-- ========================================== -->
-    <div id="modal-config" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Meu Perfil</h2>
-            <p><strong>Nome:</strong> <span id="conf-nome">...</span></p>
-            <p><strong>E-mail:</strong> <span id="conf-email">...</span></p>
-            <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
-                <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;"> Ativar Modo Escuro 🌙
-            </label>
-            <button class="close-btn" onclick="fecharConfig()">Fechar</button>
-        </div>
-    </div>
-
 </body>
 </html>

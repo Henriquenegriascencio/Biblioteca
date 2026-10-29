@@ -26,10 +26,14 @@ async function init() {
 init();
 
 function mudarAba(aba, event) {
+    // Remove 'active' de todos os conteúdos e de todos os links do menu
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    
+    // Adiciona 'active' na aba clicada e no link clicado
     document.getElementById(`aba-${aba}`).classList.add('active');
-    if(event) event.target.classList.add('active');
+    if(event) event.target.closest('.nav-link').classList.add('active'); 
+    // O '.closest' garante que se você clicar no emoji/ícone, ele acha o botão inteiro
 }
 
 // ==========================================
