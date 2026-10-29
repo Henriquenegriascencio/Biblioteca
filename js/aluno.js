@@ -17,9 +17,10 @@ init();
 
 function mudarAba(aba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    
     document.getElementById(`aba-${aba}`).classList.add('active');
-    if(event) event.target.classList.add('active');
+    if(event) event.target.closest('.nav-link').classList.add('active'); 
 }
 
 // Variável global para guardar os livros e facilitar a pesquisa

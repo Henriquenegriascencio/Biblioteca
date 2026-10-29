@@ -4,45 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Bibliotecário</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- ORDEM CORRETA DOS SCRIPTS -->
-       <!-- Scripts -->
-       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-       <script src="js/config.js" defer></script>
-       <script src="js/bibliotecario.js" defer></script>
-   </head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/bibliotecario.js" defer></script>
+</head>
 <body>
-    <div class="container">
-        <!-- Barra de Usuário -->
-        <div class="user-bar">
-            <span>Olá, <strong id="user-nome">...</strong> (📚 Bibliotecário)</span>
-            <div>
-                <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
-                <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
+    <div class="layout">
+        
+        <!-- MENU LATERAL -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">📚 Biblio</div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-link active" onclick="mudarAba('livros', event)">
+                    <span>📖</span> Acervo
+                </button>
+                <button class="nav-link" onclick="mudarAba('emprestimos', event)">
+                    <span>🔄</span> Empréstimos
+                </button>
+                <button class="nav-link" onclick="mudarAba('usuarios', event)">
+                    <span>👥</span> Alunos
+                </button>
+                <button class="nav-link" onclick="mudarAba('relatorios', event)">
+                    <span>📊</span> Relatórios
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span>Olá,</span>
+                    <strong id="user-nome">Carregando...</strong>
+                </div>
+                <div class="footer-btns">
+                    <button class="btn-icon" onclick="abrirConfig()" title="Configurações">⚙️</button>
+                    <button class="btn-sair-sidebar" onclick="fazerLogout()">Sair</button>
+                </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="header"><h1>📚 Painel do Bibliotecário</h1></div>
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="top-header">
+                <h1>Painel do Bibliotecário</h1>
+            </div>
 
-        <!-- Dashboard -->
-        <div class="dashboard">
-            <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
-            <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
-            <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
-        </div>
+            <div class="dashboard">
+                <div class="card"><h3>Total de Livros</h3><p id="total-livros">0</p></div>
+                <div class="card emprestados"><h3>Emprestados</h3><p id="total-emprestados">0</p></div>
+                <div class="card atrasados"><h3>Atrasados</h3><p id="total-atrasados">0</p></div>
+            </div>
 
-        <!-- Abas -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('livros', event)">Acervo</button>
-            <button class="tab-btn" onclick="mudarAba('emprestimos', event)">Empréstimos</button>
-            <button class="tab-btn" onclick="mudarAba('usuarios', event)">Usuários</button>
-            <button class="tab-btn" onclick="mudarAba('relatorios', event)">Relatórios</button>
-        </div>
-
-               <!-- ABA LIVROS -->
-               <div id="aba-livros" class="tab-content active">
+            <!-- ABA LIVROS -->
+            <div id="aba-livros" class="tab-content active">
                 <h2>Cadastrar Novo Livro</h2>
                 <form id="form-livro">
                     <input type="text" id="titulo" placeholder="Título" required>
@@ -59,7 +75,6 @@
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
                 <h2>Acervo</h2>
                 
-                <!-- FILTRO DE LIVROS -->
                 <div class="search-container">
                     <select id="select-filtro-livros" class="filter-select" onchange="filtrarLivros()">
                         <option value="todos">Filtrar por...</option>
@@ -70,43 +85,42 @@
                     </select>
                     <input type="text" id="filtro-livros" placeholder="Digite o termo de busca..." oninput="filtrarLivros()">
                 </div>
-    
+
                 <table id="tabela-livros">
                     <thead><tr><th>Título</th><th>Autor</th><th>Cat.</th><th>Status</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-    
+
             <!-- ABA EMPRÉSTIMOS -->
             <div id="aba-emprestimos" class="tab-content">
                 <h2>Registrar Empréstimo</h2>
                 <form id="form-emprestimo">
-                    <select id="select-aluno" required><option value="">Aluno...</option></select>
-                    <select id="select-livro" required><option value="">Livro...</option></select>
+                    <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
+                    <select id="select-livro" required><option value="">Selecione um livro...</option></select>
                     <input type="date" id="data-devolucao" required>
                     <button type="submit">Confirmar</button>
                 </form>
                 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
                 <h2>Empréstimos Ativos</h2>
-    
-                <!-- FILTRO DE EMPRÉSTIMOS -->
+
                 <div class="search-container">
                     <select id="select-filtro-emprestimos" class="filter-select" onchange="filtrarEmprestimos()">
                         <option value="todos">Filtrar por...</option>
                         <option value="livro">Livro</option>
                         <option value="aluno">Aluno</option>
-                        <option value="status">Status (Atrasado/Em dia)</option>
+                        <option value="status">Status</option>
                     </select>
                     <input type="text" id="filtro-emprestimos" placeholder="Digite o termo de busca..." oninput="filtrarEmprestimos()">
                 </div>
-    
+
                 <table id="tabela-emprestimos">
                     <thead><tr><th>Livro</th><th>Aluno</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-    
+
             <!-- ABA USUÁRIOS -->
             <div id="aba-usuarios" class="tab-content">
                 <h2>Cadastrar Novo Aluno</h2>
@@ -114,9 +128,11 @@
                     <input type="text" id="user-nome" name="nome" placeholder="Nome Completo" required>
                     <input type="email" id="user-email" name="email" placeholder="E-mail" required>
                     <input type="password" id="user-senha" name="senha" placeholder="Senha (mín 6)" required>
+                    
                     <select id="user-tipo" name="tipo">
-                        <option value="aluno">Aluno</option>
+                        <option value="aluno">Aluno</option> <!-- Bibliotecário só cria aluno -->
                     </select>
+
                     <div id="campos-aluno-user">
                         <input type="text" id="user-turma" name="turma" placeholder="Turma">
                         <input type="text" id="user-matricula" name="matricula" placeholder="Matrícula">
@@ -126,8 +142,7 @@
                 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
                 <h2>Alunos Cadastrados</h2>
-    
-                <!-- FILTRO DE USUÁRIOS -->
+
                 <div class="search-container">
                     <select id="select-filtro-usuarios" class="filter-select" onchange="filtrarUsuarios()">
                         <option value="todos">Filtrar por...</option>
@@ -137,18 +152,17 @@
                     </select>
                     <input type="text" id="filtro-usuarios" placeholder="Digite o termo de busca..." oninput="filtrarUsuarios()">
                 </div>
-    
+
                 <table id="tabela-usuarios">
                     <thead><tr><th>Nome</th><th>Turma</th><th>Matrícula</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-    
+
             <!-- ABA RELATÓRIOS -->
             <div id="aba-relatorios" class="tab-content">
                 <h2>Histórico Geral</h2>
-    
-                <!-- FILTRO DE RELATÓRIOS -->
+
                 <div class="search-container">
                     <select id="select-filtro-relatorios" class="filter-select" onchange="filtrarRelatorios()">
                         <option value="todos">Filtrar por...</option>
@@ -159,14 +173,16 @@
                     </select>
                     <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
                 </div>
-    
+
                 <table id="tabela-relatorios">
                     <thead><tr><th>Livro</th><th>Aluno</th><th>Empréstimo</th><th>Previsto</th><th>Devolvido</th><th>Status</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
+        </main>
+    </div>
 
-    <!-- MODAL CONFIG -->
+    <!-- MODAL DE CONFIGURAÇÕES -->
     <div id="modal-config" class="modal-overlay">
         <div class="modal-box">
             <h2>Meu Perfil</h2>
@@ -179,26 +195,6 @@
             </label>
             <button class="close-btn" onclick="fecharConfig()">Fechar</button>
         </div>
-
-</div> <!-- Fecha a div container principal -->
-
-<!-- MODAL DE CONFIGURAÇÕES (ESSENCIAL PARA O BOTÃO FUNCIONAR) -->
-<div id="modal-config" class="modal-overlay">
-    <div class="modal-box">
-        <h2>Meu Perfil</h2>
-        <p><strong>Nome:</strong> <span id="conf-nome">...</span></p>
-        <p><strong>E-mail:</strong> <span id="conf-email">...</span></p>
-        <p><strong>Função:</strong> <span id="conf-tipo">...</span></p>
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
-            <input type="checkbox" id="check-dark" onchange="alternarTema()" style="width: auto; margin: 0;"> Ativar Modo Escuro 🌙
-        </label>
-        <button class="close-btn" onclick="fecharConfig()">Fechar</button>
     </div>
-</div>
-
-</body>
-</html>
-
 </body>
 </html>

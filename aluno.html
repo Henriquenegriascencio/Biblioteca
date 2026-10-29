@@ -4,57 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Painel - Aluno</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js" defer></script>
     <script src="js/aluno.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Barra de Usuário -->
-        <div class="user-bar">
-            <span>Olá, <strong id="user-nome">...</strong> (🎒 Aluno)</span>
-            <div>
-                <button type="button" onclick="abrirConfig()" class="btn-config">⚙️ Configurações</button>
-                <button type="button" onclick="fazerLogout()" class="btn-sair">Sair</button>
-            </div>
-        </div>
+    <div class="layout">
+        
+        <!-- MENU LATERAL -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">🎒 Aluno</div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-link active" onclick="mudarAba('livros', event)">
+                    <span>📚</span> Estante Virtual
+                </button>
+                <button class="nav-link" onclick="mudarAba('meus-emprestimos', event)">
+                    <span>⏳</span> Meus Empréstimos
+                </button>
+            </nav>
 
-        <div class="header"><h1>🎒 Meu Painel</h1></div>
-
-        <!-- Abas -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="mudarAba('livros', event)">Consultar Acervo</button>
-            <button class="tab-btn" onclick="mudarAba('meus-emprestimos', event)">Meus Empréstimos</button>
-        </div>
-
-             <!-- ABA LIVROS (ESTANTE) -->
-             <div id="aba-livros" class="tab-content active">
-                <h2>Estante da Biblioteca</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Clique em um livro verde para pegá-lo emprestado (Prazo de 7 dias).</p>
-                
-                <!-- BARRA DE PESQUISA -->
-                <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" placeholder="Pesquisar por título, autor ou categoria..." oninput="filtrarLivros()">
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span>Olá,</span>
+                    <strong id="user-nome">Carregando...</strong>
                 </div>
-    
+                <div class="footer-btns">
+                    <button class="btn-icon" onclick="abrirConfig()" title="Configurações">⚙️</button>
+                    <button class="btn-sair-sidebar" onclick="fazerLogout()">Sair</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="top-header">
+                <h1>Minha Biblioteca</h1>
+            </div>
+
+            <!-- ABA DE LIVROS (ESTANTE) -->
+            <div id="aba-livros" class="tab-content active">
+                <h2>Estante Virtual</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Clique em um livro para pegá-lo emprestado (Prazo de 7 dias).</p>
+                
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Pesquisar por título, autor ou categoria..." oninput="filtrarLivros()" style="padding-left: 20px;">
+                </div>
+
                 <!-- A mágica acontece aqui -->
                 <div id="estante-container"></div>
             </div>
 
-        <!-- ABA MEUS EMPRÉSTIMOS -->
-        <div id="aba-meus-emprestimos" class="tab-content">
-            <h2>Meus Livros Emprestados</h2>
-            <table id="tabela-emprestimos">
-                <thead><tr><th>Livro</th><th>Devolução Prevista</th><th>Status</th><th>Ações</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div> <!-- FIM DA DIV CONTAINER -->
+            <!-- ABA MEUS EMPRÉSTIMOS -->
+            <div id="aba-meus-emprestimos" class="tab-content">
+                <h2>Meus Livros Emprestados</h2>
+                <table id="tabela-emprestimos">
+                    <thead><tr><th>Livro</th><th>Devolução Prevista</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
     <!-- MODAL DE CONFIGURAÇÕES -->
     <div id="modal-config" class="modal-overlay">
@@ -72,6 +85,5 @@
             <button class="close-btn" onclick="fecharConfig()">Fechar</button>
         </div>
     </div>
-
 </body>
 </html>
