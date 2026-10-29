@@ -44,7 +44,6 @@ async function carregarEstanteLivros() {
 
     let html = '<div class="estante-wrapper">';
 
-    // Desenha cada estante
     for (const [categoria, livrosDaCat] of Object.entries(categorias)) {
         html += `
             <div class="categoria-secao">
@@ -56,29 +55,29 @@ async function carregarEstanteLivros() {
             const statusClasse = livro.disponivel ? 'disponivel' : 'emprestado';
             const acaoClique = livro.disponivel ? `onclick="pegarEmprestado(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')"` : '';
             
-            // Cria o wrapper e o card de detalhes
+            // Sorteia uma cor de 1 a 6 para a lombada do livro
+            const corAleatoria = Math.floor(Math.random() * 6) + 1;
+            const classeCor = `livro-cor-${corAleatoria}`;
+            
             html += `
                 <div class="livro-wrapper">
-                    <div class="livro-lombada ${statusClasse}" ${acaoClique}>
+                    <!-- Aplica a classe da cor sorteada junto com o status -->
+                    <div class="livro-lombada ${classeCor} ${statusClasse}" ${acaoClique}>
                         <h4>${livro.titulo}</h4>
                     </div>
                     
-                    <!-- O Card de Detalhes que aparece no hover -->
                     <div class="livro-tooltip">
                         <h3>${livro.titulo}</h3>
                         <p><strong>Autor:</strong> ${livro.autor}</p>
                         <p><strong>Categoria:</strong> ${livro.categoria || 'Geral'}</p>
-                        <p><strong>Status:</strong> <span class="${livro.disponivel ? 'text-green' : 'text-red'}">${livro.disponivel ? 'Disponível para Empréstimo' : 'Já Emprestado'}</span></p>
-                        ${livro.disponivel ? '<small style="color: var(--primary); font-weight: bold; margin-top: 8px; display: block;">Clique para pegar (7 dias)</small>' : ''}
+                        <p><strong>Status:</strong> <span class="${livro.disponivel ? 'text-green' : 'text-red'}">${livro.disponivel ? 'Disponível' : 'Emprestado'}</span></p>
+                        ${livro.disponivel ? '<small style="color: var(--warning); font-weight: bold; margin-top: 8px; display: block; text-align:center;">Clique para pegar (7 dias)</small>' : ''}
                     </div>
                 </div>
             `;
         });
 
-        html += `
-                </div>
-            </div>
-        `;
+        html += `</div></div>`;
     }
 
     html += '</div>';

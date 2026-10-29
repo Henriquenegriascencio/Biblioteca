@@ -1,300 +1,193 @@
 :root {
-    --primary: #4F46E5; --primary-hover: #4338CA; --success: #10B981;
-    --warning: #F59E0B; --danger: #EF4444; --bg-color: #F3F4F6;
-    --surface: #FFFFFF; --text-main: #1F2937; --text-muted: #6B7280;
-    --border: #E5E7EB; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    --radius: 12px;
-    --wood-dark: #5C3A21; --wood-light: #8B5A2B;
+    /* Paleta de Cores: Biblioteca Clássica */
+    --primary: #8B5A2B;       /* Marrom Madeira */
+    --primary-hover: #6A421F; /* Marrom Escuro */
+    --success: #5F7A61;       /* Verde Oliva Suave */
+    --warning: #D4A373;       /* Amarelo Areia */
+    --danger: #A94A4A;        /* Vermelho Tijolo */
+    
+    --bg-color: #FDFBF7;      /* Creme/Off-white fundo */
+    --surface: #FFFFFF;       /* Branco para os cards */
+    --text-main: #3E2723;     /* Marrom quase preto para leitura */
+    --text-muted: #8D7B73;    /* Marrom claro para textos secundários */
+    --border: #E6DED8;        /* Borda suave */
+    --shadow: 0 4px 6px -1px rgba(139, 90, 43, 0.1);
+    --radius: 10px;
+    
+    /* Madeira da Estante */
+    --wood-dark: #3E2723; 
+    --wood-light: #6A421F;
+    --shelf-bg: #E8D8C8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 30px 20px; transition: background 0.4s; }
+body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 30px 20px; transition: background 0.4s, color 0.4s; }
 .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.6s ease-in-out; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.header h1 { font-size: 28px; font-weight: 700; color: var(--primary); text-align: center; }
+.header h1 { font-size: 28px; font-weight: 700; color: var(--primary); text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
 /* Barra de Usuário */
-.user-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 20px; border-radius: var(--radius); box-shadow: var(--shadow); font-size: 14px; border-left: 5px solid var(--primary); }
+.user-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 20px; border-radius: var(--radius); box-shadow: var(--shadow); font-size: 14px; border-left: 6px solid var(--primary); }
 .user-bar div { display: flex; gap: 10px; }
-.btn-sair { background-color: #FEE2E2; color: #991B1B; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.btn-sair { background-color: #FEE2E2; color: var(--danger); padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .btn-sair:hover { background-color: #FCA5A5; transform: scale(1.05); }
 .btn-config { background-color: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-.btn-config:hover { background-color: var(--bg-color); }
+.btn-config:hover { background-color: #F3EBE1; }
+
+/* Dashboard */
+.dashboard { display: flex; gap: 15px; flex-wrap: wrap; }
+.card { flex: 1; min-width: 200px; background: var(--surface); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; border-top: 4px solid var(--primary); transition: transform 0.3s; }
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px -3px rgba(139, 90, 43, 0.15); }
+.card h3 { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+.card p { font-size: 26px; font-weight: 700; color: var(--primary); }
+.card.emprestados { border-top-color: var(--warning); }
+.card.emprestados p { color: var(--warning); }
+.card.atrasados { border-top-color: var(--danger); }
+.card.atrasados p { color: var(--danger); }
 
 /* Abas */
-.tabs { display: flex; gap: 10px; background: #E5E7EB; padding: 6px; border-radius: var(--radius); }
-.tab-btn { flex: 1; padding: 12px; background: transparent; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-muted); border-radius: 8px; transition: all 0.3s ease; }
+.tabs { display: flex; gap: 10px; background: #EAE0D5; padding: 6px; border-radius: var(--radius); overflow-x: auto; }
+.tab-btn { flex: 1; padding: 12px; background: transparent; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-muted); border-radius: 8px; white-space: nowrap; transition: all 0.3s ease; }
+.tab-btn:hover { color: var(--primary); }
 .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow); transform: scale(1.02); }
 
-.tab-content { display: none; background: var(--surface); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.tab-content { display: none; background: var(--surface); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
 .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
-h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-color); color: var(--primary); }
+h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #EAE0D5; color: var(--primary); }
 
 /* =========================================
    ESTANTE DE LIVROS (ALUNO)
    ========================================= */
-.estante-wrapper { display: flex; flex-direction: column; gap: 30px; }
+.estante-wrapper { display: flex; flex-direction: column; gap: 40px; margin-top: 20px; }
 .categoria-secao { margin-bottom: 10px; }
-.categoria-titulo { font-size: 18px; color: var(--text-main); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.categoria-titulo { font-size: 20px; color: var(--text-main); font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; border-left: 5px solid var(--warning); padding-left: 10px; }
 
+/* A Prateleira */
 .prateleira {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     padding: 15px 15px 0 15px;
-    border-bottom: 15px solid var(--wood-light);
+    border-bottom: 20px solid var(--wood-light); /* Borda madeira */
     border-left: 10px solid var(--wood-dark);
     border-right: 10px solid var(--wood-dark);
     border-radius: 4px;
-    background: #E5D9C5; /* Fundo de madeira clara */
-    box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2), 0 10px 15px -3px rgba(0,0,0,0.3);
-    min-height: 180px;
-    align-items: flex-end; /* Livros ficam apoiados na base */
+    background: var(--shelf-bg);
+    box-shadow: inset 0 15px 15px -10px rgba(0,0,0,0.6), 0 10px 15px -3px rgba(0,0,0,0.2);
+    min-height: 240px;
+    align-items: flex-end;
 }
+
+/* O Wrapper para o Tooltip funcionar */
+.livro-wrapper { position: relative; display: flex; align-items: flex-end; }
 
 /* A Lombada do Livro */
 .livro-lombada {
-    width: 45px;
-    height: 160px;
-    border-radius: 4px 4px 0 0;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset -3px 0 5px rgba(0,0,0,0.2), 2px 0 5px rgba(0,0,0,0.3);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg); /* Texto de baixo para cima */
-    padding: 10px 0;
-    overflow: hidden;
-}
-
-/* Animação ao passar o mouse: O livro "desliza" para fora da prateleira */
-.livro-lombada:hover {
-    transform: rotate(180deg) translateY(-15px);
-    box-shadow: inset -3px 0 5px rgba(0,0,0,0.2), 5px 5px 15px rgba(0,0,0,0.4);
-    z-index: 10;
-}
-
-.livro-lombada.disponivel { background: linear-gradient(135deg, #10B981, #059669); color: white; }
-.livro-lombada.emprestado { background: linear-gradient(135deg, #9CA3AF, #6B7280); color: #E5E7EB; cursor: not-allowed; }
-.livro-lombada h4 { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 120px; }
-
-/* Tabelas normais (Admin/Biblio) */
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-th { background: #FAFAFA; color: var(--text-muted); text-transform: uppercase; font-size: 12px; }
-tr { transition: background 0.2s; }
-tr:hover { background: #F9FAFB; }
-
-/* Inputs e Botões */
-form { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-input, select { padding: 12px; width: 100%; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: #FAFAFA; transition: border 0.3s; }
-input:focus, select:focus { outline: none; border-color: var(--primary); }
-button[type="submit"], .btn-action { padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-button[type="submit"]:hover, .btn-action:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3); }
-
-.status-disponivel, .status-emprestado, .status-atraso { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
-.status-disponivel { background: #D1FAE5; color: #065F46; }
-.status-emprestado { background: #FEF3C7; color: #92400E; }
-.status-atraso { background: #FEE2E2; color: #991B1B; }
-.linha-atraso { background: #FEF2F2; }
-
-/* Modo Escuro */
-body.dark-mode { --bg-color: #111827; --surface: #1F2937; --text-main: #F9FAFB; --text-muted: #9CA3AF; --border: #374151; }
-body.dark-mode input, body.dark-mode select { background-color: #374151; color: white; }
-body.dark-mode .tabs { background: #374151; }
-body.dark-mode .tab-btn.active { background: #4B5563; color: white; }
-body.dark-mode .prateleira { background: #2d3748; border-bottom-color: #4a5568; border-left-color: #1a202c; border-right-color: #1a202c; }
-
-/* Modal */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
-.modal-overlay.active { display: flex; opacity: 1; }
-.modal-box { background: var(--surface); padding: 30px; border-radius: var(--radius); width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); color: var(--text-main); transform: scale(0.9); transition: transform 0.3s; }
-.modal-overlay.active .modal-box { transform: scale(1); }
-.modal-box h2 { margin-bottom: 20px; }
-.modal-box p { margin-bottom: 10px; font-size: 14px; }
-.modal-box .close-btn { background: var(--danger); color: white; margin-top: 20px; width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-/* =========================================
-   ESTANTE DE LIVROS (ALUNO)
-   ========================================= */
-   .estante-wrapper { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 40px; 
-    margin-top: 20px;
-}
-
-.categoria-secao { 
-    margin-bottom: 10px; 
-}
-
-.categoria-titulo { 
-    font-size: 20px; 
-    color: var(--text-main); 
-    font-weight: 700; 
-    margin-bottom: 15px; 
-    text-transform: uppercase; 
-    letter-spacing: 1px;
-    border-left: 5px solid var(--primary);
-    padding-left: 10px;
-}
-
-/* A Prateleira de Madeira */
-.prateleira {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 15px 15px 0 15px;
-    border-bottom: 18px solid #5C3A21; /* Borda inferior grossa (madeira) */
-    border-left: 8px solid #3E2716;
-    border-right: 8px solid #3E2716;
-    border-radius: 4px;
-    background: #D7CCC8; /* Fundo claro */
-    box-shadow: inset 0 10px 15px -10px rgba(0,0,0,0.5), 0 10px 15px -3px rgba(0,0,0,0.2);
-    min-height: 220px;
-    align-items: flex-end; /* Faz os livros ficarem de pé na base */
-}
-
-/* O Livro (Lombada) */
-.livro-lombada {
     width: 50px;
     height: 180px;
-    border-radius: 4px 4px 0 0;
+    border-radius: 3px 3px 0 0;
     cursor: pointer;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset -4px 0 6px rgba(0,0,0,0.3), 2px 0 5px rgba(0,0,0,0.3);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    writing-mode: vertical-rl; /* Texto em pé */
+    /* Sombra 3D simulando a lombada curvada */
+    box-shadow: inset -4px 0 6px rgba(0,0,0,0.3), inset 2px 0 4px rgba(255,255,255,0.2), 2px 0 5px rgba(0,0,0,0.4);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    writing-mode: vertical-rl;
     text-orientation: mixed;
-    transform: rotate(180deg);
+    transform: rotate(180deg); /* Texto de baixo pra cima */
     padding: 10px 0;
     overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.2);
 }
 
-/* Animação ao passar o mouse */
+/* Efeito de brilho na lombada */
+.livro-lombada::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 20%, rgba(0,0,0,0.1) 80%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+}
+
+/* ANIMAÇÃO DO LIVRO AO PASSAR O MOUSE */
 .livro-lombada:hover {
-    transform: rotate(180deg) translateY(-15px) translateX(-5px);
-    box-shadow: inset -4px 0 6px rgba(0,0,0,0.3), 8px 10px 15px rgba(0,0,0,0.4);
+    /* Sobe, inclina levemente e cresce um tiquinho */
+    transform: rotate(180deg) translateY(-20px) translateX(-10px) rotate(-3deg) scale(1.02);
+    box-shadow: inset -4px 0 6px rgba(0,0,0,0.3), 15px 15px 20px rgba(0,0,0,0.4);
     z-index: 10;
 }
 
-/* Cores dos Livros */
-.livro-lombada.disponivel { 
-    background: linear-gradient(135deg, #10B981, #047857); 
-    color: white; 
-}
+.livro-lombada.emprestado { cursor: not-allowed; filter: grayscale(0.8) opacity(0.7); }
 
-.livro-lombada.emprestado { 
-    background: linear-gradient(135deg, #9CA3AF, #4B5563); 
-    color: #D1D5DB; 
-    cursor: not-allowed; 
-}
+.livro-lombada h4 { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 150px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); color: #FFF; letter-spacing: 1px;}
 
-.livro-lombada h4 { 
-    font-size: 13px; 
-    font-weight: 600; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    max-height: 150px; 
-}
+/* Cores geradas pelo JS */
+.livro-cor-1 { background: linear-gradient(135deg, #800000, #4A0000); } /* Vinho */
+.livro-cor-2 { background: linear-gradient(135deg, #556B2F, #2F3B1A); } /* Verde Oliva */
+.livro-cor-3 { background: linear-gradient(135deg, #4682B4, #1E3F5A); } /* Azul Aço */
+.livro-cor-4 { background: linear-gradient(135deg, #D2691E, #8B4513); } /* Laranja Queimado */
+.livro-cor-5 { background: linear-gradient(135deg, #2F4F4F, #1A2D2D); } /* Cinza Escuro */
+.livro-cor-6 { background: linear-gradient(135deg, #B8860B, #7A5A00); } /* Mostarda */
 
-/* Modo Escuro na Estante */
-body.dark-mode .prateleira {
-    background: #2d3748;
-    border-bottom-color: #1a202c;
-    border-left-color: #000000;
-    border-right-color: #000000;
-    box-shadow: inset 0 10px 15px -10px rgba(0,0,0,0.8), 0 10px 15px -3px rgba(0,0,0,0.5);
-}
-/* =========================================
-   WRAPPER E TOOLTIP DO LIVRO (HOVER)
-   ========================================= */
-   .livro-wrapper {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    /* Necessário para posicionar o tooltip corretamente */
-}
-
+/* Tooltip (Card de Detalhes) */
 .livro-tooltip {
-    position: absolute;
-    bottom: 105%; /* Fica logo acima do livro */
-    left: 50%;
+    position: absolute; bottom: 105%; left: 50%;
     transform: translateX(-50%) translateY(10px);
-    
-    background: #1F2937; /* Fundo escuro elegante */
-    color: #F9FAFB;
-    padding: 15px;
-    border-radius: 8px;
-    width: 220px;
+    background: #3E2723; color: #FDFBF7;
+    padding: 15px; border-radius: 8px; width: 220px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    
-    /* Escondido por padrão */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none; /* O mouse "atravessa" o tooltip */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    z-index: 100;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 100;
+    border: 1px solid var(--wood-light);
 }
+.livro-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #3E2723 transparent transparent transparent; }
+.livro-wrapper:hover .livro-tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.livro-tooltip h3 { font-size: 15px; margin-bottom: 8px; color: var(--warning); border-bottom: 1px solid #5A3D31; padding-bottom: 8px; text-align: center; }
+.livro-tooltip p { font-size: 12px; margin-bottom: 4px; color: #D1C8C4; }
+.livro-tooltip strong { color: #FDFBF7; }
+.text-green { color: var(--success); font-weight: bold; }
+.text-red { color: #FF8A8A; font-weight: bold; }
 
-/* O triangulinho embaixo do tooltip */
-.livro-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -6px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: #1F2937 transparent transparent transparent;
-}
+/* Tabelas e Formulários (Mantidos e Estilizados) */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: #F3EBE1; color: var(--primary); text-transform: uppercase; font-size: 12px; font-weight: 700; }
+tr { transition: background 0.2s; }
+tr:hover { background: #FDFBF7; }
 
-/* Quando passa o mouse no wrapper, o tooltip aparece */
-.livro-wrapper:hover .livro-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0); /* Efeito de subida */
-}
+form { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+input, select { padding: 12px; width: 100%; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: #FDFBF7; transition: border 0.3s; color: var(--text-main); }
+input:focus, select:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.1); }
+button[type="submit"], .btn-action { padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+button[type="submit"]:hover, .btn-action:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(139, 90, 43, 0.3); }
 
-/* Estilos do texto dentro do tooltip */
-.livro-tooltip h3 {
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--primary);
-    border-bottom: 1px solid #374151;
-    padding-bottom: 8px;
-    text-align: center;
-}
+.status-disponivel { background: #D1FAE5; color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.status-emprestado { background: #FEF3C7; color: var(--warning); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.status-atraso { background: #FEE2E2; color: var(--danger); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.linha-atraso { background: #FEF2F2; }
 
-.livro-tooltip p {
-    font-size: 12px;
-    margin-bottom: 4px;
-    color: #D1D5DB;
+/* Modo Escuro (Café/Biblioteca Noturna) */
+body.dark-mode {
+    --bg-color: #1A1512; --surface: #241D19; --text-main: #F5EFE6;
+    --text-muted: #B5A59A; --border: #3E322A; --shelf-bg: #2D241E;
+    --primary: #D4A373; --primary-hover: #B8865E;
 }
+body.dark-mode .tabs { background: #2D241E; }
+body.dark-mode .tab-btn.active { background: #3E322A; color: var(--warning); }
+body.dark-mode .prateleira { border-bottom-color: #1A1512; border-left-color: #0E0A08; border-right-color: #0E0A08; }
+body.dark-mode input, body.dark-mode select { background-color: #1A1512; }
+body.dark-mode .livro-tooltip { background: #3E322A; border-color: #5A4A3E; }
+body.dark-mode .livro-tooltip::after { border-color: #3E322A transparent transparent transparent; }
+body.dark-mode th { background: #2D241E; }
 
-.livro-tooltip strong {
-    color: #F3F4F6;
-}
-
-.text-green { color: #10B981; }
-.text-red { color: #EF4444; }
-
-/* Modo Escuro: Deixa o tooltip um pouco mais claro para contrastar */
-body.dark-mode .livro-tooltip {
-    background: #374151;
-    border: 1px solid #4B5563;
-}
-body.dark-mode .livro-tooltip::after {
-    border-color: #374151 transparent transparent transparent;
-}
-body.dark-mode .livro-tooltip h3 { border-bottom-color: #4B5563; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-box { background: var(--surface); padding: 30px; border-radius: var(--radius); width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); color: var(--text-main); transform: scale(0.9); transition: transform 0.3s; border-top: 5px solid var(--primary); }
+.modal-overlay.active .modal-box { transform: scale(1); }
+.modal-box .close-btn { background: var(--danger); color: white; margin-top: 20px; width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.modal-box .close-btn:hover { background: #8B3A3A; }
