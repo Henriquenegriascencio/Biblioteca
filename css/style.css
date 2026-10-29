@@ -200,48 +200,61 @@ body.dark-mode tr:hover {
 /* =========================================
    BARRA DE PESQUISA (LUPA)
    ========================================= */
-   .search-container {
-    position: relative;
+ /* =========================================
+   BARRA DE PESQUISA COM FILTRO
+   ========================================= */
+.search-container {
+    display: flex;
+    gap: 10px;
     margin-bottom: 25px;
-    max-width: 600px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.search-container .search-icon {
-    position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: var(--text-muted);
-    pointer-events: none;
+.filter-select {
+    width: 200px;
+    padding: 15px;
+    border-radius: 30px;
+    border: 2px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .search-container input {
-    padding: 15px 15px 15px 50px; /* Espaço na esquerda para o ícone */
-    border-radius: 30px; /* Bordas bem arredondadas */
+    flex: 1; /* Ocupa o resto do espaço */
+    padding: 15px 20px;
+    border-radius: 30px;
     border: 2px solid var(--border);
     font-size: 15px;
     background: var(--surface);
     color: var(--text-main);
     transition: all 0.3s ease;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.search-container input:focus {
+.filter-select:focus, .search-container input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(139, 90, 43, 0.15); /* Brilho suave ao clicar */
+    box-shadow: 0 0 0 4px rgba(139, 90, 43, 0.15);
 }
 
-/* Modo Escuro */
-body.dark-mode .search-container input {
+body.dark-mode .filter-select, body.dark-mode .search-container input {
     background: #1A1512;
     border-color: #3E322A;
 }
-body.dark-mode .search-container input:focus {
-    box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.2);
+
+/* Responsividade: No celular, empilha os dois */
+@media (max-width: 600px) {
+    .search-container {
+        flex-direction: column;
+    }
+    .filter-select {
+        width: 100%;
+    }
 }
 
 /* Tabelas */

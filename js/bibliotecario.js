@@ -53,16 +53,29 @@ async function carregarLivros() {
     renderizarLivros(dadosLivros);
 }
 
+// 1. FILTRO DE LIVROS
 function filtrarLivros() {
+    const tipoFiltro = document.getElementById('select-filtro-livros').value;
     const termo = document.getElementById('filtro-livros').value.toLowerCase();
-    const filtrados = dadosLivros.filter(l => 
-        l.titulo.toLowerCase().includes(termo) || 
-        l.autor.toLowerCase().includes(termo) || 
-        (l.categoria || '').toLowerCase().includes(termo) ||
-        (l.disponivel ? 'disponivel' : 'emprestado').includes(termo)
-    );
+    
+    if (termo === '' || tipoFiltro === 'todos') {
+        renderizarLivros(dadosLivros);
+        return;
+    }
+
+    const filtrados = dadosLivros.filter(l => {
+        if (tipoFiltro === 'titulo') return l.titulo.toLowerCase().includes(termo);
+        if (tipoFiltro === 'autor') return l.autor.toLowerCase().includes(termo);
+        if (tipoFiltro === 'categoria') return (l.categoria || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'status') {
+            const statusTexto = l.disponivel ? 'disponivel' : 'emprestado';
+            return statusTexto.includes(termo);
+        }
+        return false;
+    });
     renderizarLivros(filtrados);
 }
+
 
 function renderizarLivros(lista) {
     const tbody = document.querySelector('#tabela-livros tbody');
@@ -105,15 +118,25 @@ async function carregarUsuarios() {
     renderizarUsuarios(dadosUsuarios);
 }
 
+// 2. FILTRO DE USUÁRIOS
 function filtrarUsuarios() {
+    const tipoFiltro = document.getElementById('select-filtro-usuarios').value;
     const termo = document.getElementById('filtro-usuarios').value.toLowerCase();
-    const filtrados = dadosUsuarios.filter(u => 
-        u.nome.toLowerCase().includes(termo) || 
-        (u.turma || '').toLowerCase().includes(termo) || 
-        (u.matricula || '').toLowerCase().includes(termo)
-    );
+    
+    if (termo === '' || tipoFiltro === 'todos') {
+        renderizarUsuarios(dadosUsuarios);
+        return;
+    }
+
+    const filtrados = dadosUsuarios.filter(u => {
+        if (tipoFiltro === 'nome') return u.nome.toLowerCase().includes(termo);
+        if (tipoFiltro === 'turma') return (u.turma || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'matricula') return (u.matricula || '').toLowerCase().includes(termo);
+        return false;
+    });
     renderizarUsuarios(filtrados);
 }
+
 
 function renderizarUsuarios(lista) {
     const tbody = document.querySelector('#tabela-usuarios tbody');
@@ -161,18 +184,27 @@ async function carregarEmprestimos() {
     renderizarEmprestimos(dadosEmprestimos);
 }
 
+// 3. FILTRO DE EMPRÉSTIMOS
 function filtrarEmprestimos() {
+    const tipoFiltro = document.getElementById('select-filtro-emprestimos').value;
     const termo = document.getElementById('filtro-emprestimos').value.toLowerCase();
+    
+    if (termo === '' || tipoFiltro === 'todos') {
+        renderizarEmprestimos(dadosEmprestimos);
+        return;
+    }
+
     const hoje = new Date(); hoje.setHours(0,0,0,0);
 
     const filtrados = dadosEmprestimos.filter(e => {
-        const titulo = e.livros?.titulo?.toLowerCase() || '';
-        const nome = (e.perfis?.nome || e.nome_aluno || '').toLowerCase();
-        const dDev = new Date(e.data_devolucao + 'T00:00:00');
-        const isAtraso = dDev < hoje;
-        const status = isAtraso ? 'atrasado' : 'em dia';
-
-        return titulo.includes(termo) || nome.includes(termo) || status.includes(termo);
+        if (tipoFiltro === 'livro') return (e.livros?.titulo || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'aluno') return (e.perfis?.nome || e.nome_aluno || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'status') {
+            const dDev = new Date(e.data_devolucao + 'T00:00:00');
+            const status = dDev < hoje ? 'atrasado' : 'em dia';
+            return status.includes(termo);
+        }
+        return false;
     });
     renderizarEmprestimos(filtrados);
 }
@@ -240,15 +272,28 @@ async function carregarRelatorios() {
     renderizarRelatorios(dadosRelatorios);
 }
 
+f// 4. FILTRO DE RELATÓRIOS
 function filtrarRelatorios() {
+    const tipoFiltro = document.getElementById('select-filtro-relatorios').value;
     const termo = document.getElementById('filtro-relatorios').value.toLowerCase();
+    
+    if (termo === '' || tipoFiltro === 'todos') {
+        renderizarRelatorios(dadosRelatorios);
+        return;
+    }
+
     const filtrados = dadosRelatorios.filter(e => {
-        const titulo = e.livros?.titulo?.toLowerCase() || '';
-        const nome = (e.perfis?.nome || e.nome_aluno || '').toLowerCase();
-        const dataEmp = new Date(e.criado_em).toLocaleDateString('pt-BR');
-        const status = e.devolvido ? 'devolvido' : 'ativo';
-        
-        return titulo.includes(termo) || nome.includes(termo) || dataEmp.includes(termo) || status.includes(termo);
+        if (tipoFiltro === 'livro') return (e.livros?.titulo || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'aluno') return (e.perfis?.nome || e.nome_aluno || '').toLowerCase().includes(termo);
+        if (tipoFiltro === 'status') {
+            const status = e.devolvido ? 'devolvido' : 'ativo';
+            return status.includes(termo);
+        }
+        if (tipoFiltro === 'data') {
+            const dataEmp = new Date(e.criado_em).toLocaleDateString('pt-BR');
+            return dataEmp.includes(termo);
+        }
+        return false;
     });
     renderizarRelatorios(filtrados);
 }

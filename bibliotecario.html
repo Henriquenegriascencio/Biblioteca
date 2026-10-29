@@ -61,8 +61,14 @@
                 
                 <!-- FILTRO DE LIVROS -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="filtro-livros" placeholder="Buscar por título, autor, categoria ou status..." oninput="filtrarLivros()">
+                    <select id="select-filtro-livros" class="filter-select" onchange="filtrarLivros()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="titulo">Título</option>
+                        <option value="autor">Autor</option>
+                        <option value="categoria">Categoria</option>
+                        <option value="status">Status</option>
+                    </select>
+                    <input type="text" id="filtro-livros" placeholder="Digite o termo de busca..." oninput="filtrarLivros()">
                 </div>
     
                 <table id="tabela-livros">
@@ -86,8 +92,13 @@
     
                 <!-- FILTRO DE EMPRÉSTIMOS -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="filtro-emprestimos" placeholder="Buscar por livro, aluno ou status..." oninput="filtrarEmprestimos()">
+                    <select id="select-filtro-emprestimos" class="filter-select" onchange="filtrarEmprestimos()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="livro">Livro</option>
+                        <option value="aluno">Aluno</option>
+                        <option value="status">Status (Atrasado/Em dia)</option>
+                    </select>
+                    <input type="text" id="filtro-emprestimos" placeholder="Digite o termo de busca..." oninput="filtrarEmprestimos()">
                 </div>
     
                 <table id="tabela-emprestimos">
@@ -118,8 +129,13 @@
     
                 <!-- FILTRO DE USUÁRIOS -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="filtro-usuarios" placeholder="Buscar por nome, turma ou matrícula..." oninput="filtrarUsuarios()">
+                    <select id="select-filtro-usuarios" class="filter-select" onchange="filtrarUsuarios()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="nome">Nome</option>
+                        <option value="turma">Turma</option>
+                        <option value="matricula">Matrícula</option>
+                    </select>
+                    <input type="text" id="filtro-usuarios" placeholder="Digite o termo de busca..." oninput="filtrarUsuarios()">
                 </div>
     
                 <table id="tabela-usuarios">
@@ -134,8 +150,14 @@
     
                 <!-- FILTRO DE RELATÓRIOS -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="filtro-relatorios" placeholder="Buscar por livro, aluno, data ou status..." oninput="filtrarRelatorios()">
+                    <select id="select-filtro-relatorios" class="filter-select" onchange="filtrarRelatorios()">
+                        <option value="todos">Filtrar por...</option>
+                        <option value="livro">Livro</option>
+                        <option value="aluno">Aluno</option>
+                        <option value="status">Status (Devolvido/Ativo)</option>
+                        <option value="data">Data do Empréstimo</option>
+                    </select>
+                    <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
                 </div>
     
                 <table id="tabela-relatorios">
