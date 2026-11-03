@@ -176,38 +176,97 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
     }
 });
 
-// ==========================================
-// 4. EMPRÉSTIMOS (Filtrar por Livro, Aluno ou Status)
-// ==========================================
 async function carregarEmprestimos() {
-    const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).eq('devolvido', false);
+    // Pega tudo que está pendente ou ativo
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo), perfis(nome)`)
+        .in('status', ['pendente', 'ativo']);
+        
     dadosEmprestimos = data || [];
     renderizarEmprestimos(dadosEmprestimos);
 }
 
-// 3. FILTRO DE EMPRÉSTIMOS
-function filtrarEmprestimos() {
-    const tipoFiltro = document.getElementById('select-filtro-emprestimos').value;
-    const termo = document.getElementById('filtro-emprestimos').value.toLowerCase();
+function renderizarEmprestimos(lista) {
+    const tbody = document.querySelector('#tabela-emprestimos tbody');
+    tbody.innerHTML = ''; 
     
-    if (termo === '' || tipoFiltro === 'todos') {
-        renderizarEmprestimos(dadosEmprestimos);
-        return;
-    }
-
+    // Contadores do Dashboard
+    let pendentes = lista.filter(e => e.status === 'pendente').length;
+    let ativos = lista.filter(e => e.status === 'ativo').length;
+    
+    document.getElementById('total-emprestados').innerText = ativos;
+    
+    let atrasados = 0; 
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-
-    const filtrados = dadosEmprestimos.filter(e => {
-        if (tipoFiltro === 'livro') return (e.livros?.titulo || '').toLowerCase().includes(termo);
-        if (tipoFiltro === 'aluno') return (e.perfis?.nome || e.nome_aluno || '').toLowerCase().includes(termo);
-        if (tipoFiltro === 'status') {
-            const dDev = new Date(e.data_devolucao + 'T00:00:00');
-            const status = dDev < hoje ? 'atrasado' : 'em dia';
-            return status.includes(termo);
-        }
-        return false;
+    lista.filter(e => e.status === 'ativo').forEach(e => {
+        if (new Date(e.data_devolucao + 'T00:00:00') < hoje) atrasados++;
     });
-    renderizarEmprestimos(filtrados);
+    document.getElementById('total-atrasados').innerText = atrasados;
+
+    if (lista.length === 0) return tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhuma movimentação.</td></tr>`;
+
+    lista.forEach(e => {
+        const nomeAluno = e.perfis?.nome || e.nome_aluno || '?';
+        const tituloLivro = e.livros?.titulo || 'Excluído';
+        let acoes = '';
+
+        if (e.status === 'pendente') {
+            acoes = `
+                <button class="btn-devolver btn-action" style="background:#10B981;" onclick="aprovarEmprestimo(${e.id}, ${e.livro_id})">Aprovar</button>
+                <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="recusarEmprestimo(${e.id}, ${e.livro_id})">Recusar</button>
+            `;
+            tbody.innerHTML += `
+                <tr style="background: rgba(245, 158, 11, 0.1);">
+                    <td>${tituloLivro}</td><td>${nomeAluno}</td>
+                    <td>-</td>
+                    <td><span class="status-emprestado">⏳ Pendente</span></td>
+                    <td>${acoes}</td>
+                </tr>`;
+        } else {
+            const dDev = new Date(e.data_devolucao + 'T00:00:00');
+            let isAtraso = dDev < hoje;
+            acoes = `<button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button>`;
+            
+            // Adiciona botão de excluir para o admin
+            if (tipoUsuario === 'administrador') {
+                acoes += ` <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="cancelarEmprestimo(${e.id}, ${e.livro_id})">🗑️</button>`;
+            }
+
+            tbody.innerHTML += `
+                <tr class="${isAtraso ? 'linha-atraso' : ''}">
+                    <td>${tituloLivro}</td><td>${nomeAluno}</td>
+                    <td>${dDev.toLocaleDateString('pt-BR')}</td>
+                    <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
+                    <td>${acoes}</td>
+                </tr>`;
+        }
+    });
+}
+
+// NOVA FUNÇÃO: Aprovar (Calcula 7 dias e ativa)
+async function aprovarEmprestimo(empId, livroId) {
+    let dataDev = new Date();
+    dataDev.setDate(dataDev.getDate() + 7);
+    const dataFormatada = dataDev.toISOString().split('T')[0];
+
+    await window.supabaseClient.from('emprestimos')
+        .update({ status: 'ativo', data_devolucao: dataFormatada })
+        .eq('id', empId);
+    
+    alert("Empréstimo aprovado! O aluno já pode retirar o livro.");
+    carregarEmprestimos();
+}
+
+// NOVA FUNÇÃO: Recusar (Devolve o livro para a estante)
+async function recusarEmprestimo(empId, livroId) {
+    if(!confirm("Recusar solicitação? O livro voltará a ficar disponível.")) return;
+    
+    await window.supabaseClient.from('emprestimos').update({ status: 'recusado' }).eq('id', empId);
+    await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
+    
+    alert("Solicitação recusada e livro liberado.");
+    carregarEmprestimos();
+    carregarLivros();
 }
 
 function renderizarEmprestimos(lista) {
@@ -268,35 +327,37 @@ async function devolver(empId, livroId) {
 // 5. RELATÓRIOS (Filtrar por Livro, Aluno, Data ou Status)
 // ==========================================
 async function carregarRelatorios() {
-    const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo), perfis(nome)`).order('id', { ascending: false });
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo), perfis(nome)`)
+        .order('id', { ascending: false });
+        
     dadosRelatorios = data || [];
     renderizarRelatorios(dadosRelatorios);
 }
 
-f// 4. FILTRO DE RELATÓRIOS
-function filtrarRelatorios() {
-    const tipoFiltro = document.getElementById('select-filtro-relatorios').value;
-    const termo = document.getElementById('filtro-relatorios').value.toLowerCase();
+function renderizarRelatorios(lista) {
+    const tbody = document.querySelector('#tabela-relatorios tbody');
+    tbody.innerHTML = '';
+    if (lista.length === 0) return tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum registro.</td></tr>`;
     
-    if (termo === '' || tipoFiltro === 'todos') {
-        renderizarRelatorios(dadosRelatorios);
-        return;
-    }
+    lista.forEach(e => {
+        let statusHtml = '';
+        let dataPrevista = e.data_devolucao ? new Date(e.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+        
+        if (e.status === 'pendente') statusHtml = `<span class="status-emprestado">Pendente</span>`;
+        else if (e.status === 'recusado') statusHtml = `<span class="status-atraso" style="background:#374151; color:white;">Recusado</span>`;
+        else if (e.status === 'ativo') statusHtml = `<span class="status-emprestado">Ativo</span>`;
+        else statusHtml = `<span class="status-disponivel">Devolvido</span>`;
 
-    const filtrados = dadosRelatorios.filter(e => {
-        if (tipoFiltro === 'livro') return (e.livros?.titulo || '').toLowerCase().includes(termo);
-        if (tipoFiltro === 'aluno') return (e.perfis?.nome || e.nome_aluno || '').toLowerCase().includes(termo);
-        if (tipoFiltro === 'status') {
-            const status = e.devolvido ? 'devolvido' : 'ativo';
-            return status.includes(termo);
-        }
-        if (tipoFiltro === 'data') {
-            const dataEmp = new Date(e.criado_em).toLocaleDateString('pt-BR');
-            return dataEmp.includes(termo);
-        }
-        return false;
+        tbody.innerHTML += `
+            <tr>
+                <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${new Date(e.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td>${dataPrevista}</td>
+                <td>${e.data_devolucao_real ? new Date(e.data_devolucao_real + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                <td>${statusHtml}</td>
+            </tr>`;
     });
-    renderizarRelatorios(filtrados);
 }
 
 function renderizarRelatorios(lista) {

@@ -120,76 +120,85 @@ function renderizarEstante(livrosParaMostrar) {
     container.innerHTML = html;
 }
 
-// ==========================================
-// PEGAR LIVRO EMPRESTADO (AUTOATENDIMENTO)
-// ==========================================
 async function pegarEmprestado(livroId, titulo) {
-    // Calcula a data de devolução (Hoje + 7 dias)
-    let dataDevolucao = new Date();
-    dataDevolucao.setDate(dataDevolucao.getDate() + 7);
-    
-    // Formata para AAAA-MM-DD para salvar no banco
-    const dataFormatada = dataDevolucao.toISOString().split('T')[0];
-    const dataExibicao = dataDevolucao.toLocaleDateString('pt-BR');
-
-    if (!confirm(`Você deseja pegar o livro "${titulo}" emprestado?\n\nO prazo de devolução é de 7 dias.\nData limite: ${dataExibicao}`)) {
+    if (!confirm(`Deseja solicitar o empréstimo do livro "${titulo}"?\n\nAguarde a aprovação do bibliotecário.`)) {
         return;
     }
 
-    // 1. Registra o empréstimo no banco
+    // 1. Registra a solicitação como PENDENTE
     const { error: erroEmp } = await window.supabaseClient.from('emprestimos').insert([{ 
         livro_id: livroId, 
         aluno_id: alunoId, 
-        data_devolucao: dataFormatada,
-        nome_aluno: document.getElementById('user-nome').innerText // Salva o nome como backup
+        status: 'pendente',
+        nome_aluno: document.getElementById('user-nome').innerText
     }]);
 
-    if (erroEmp) return alert("Erro ao pegar livro: " + erroEmp.message);
+    if (erroEmp) return alert("Erro ao solicitar livro: " + erroEmp.message);
 
-    // 2. Atualiza o livro para Indisponível
+    // 2. Reserva o livro (para ninguém mais pegar enquanto o bibliotecário não aprova)
     await window.supabaseClient.from('livros').update({ disponivel: false }).eq('id', livroId);
 
-    alert(`Boa leitura! O livro "${titulo}" estará disponível para você até ${dataExibicao}.`);
+    alert(`Solicitação enviada! Fale com o bibliotecário para retirar o livro.`);
     
-    // 3. Atualiza a tela
     carregarEstanteLivros();
     carregarMeusEmprestimos();
-    mudarAba('meus-emprestimos', { target: document.querySelectorAll('.tab-btn')[1] });
+    mudarAba('meus-emprestimos', { target: document.querySelectorAll('.nav-link')[1] });
 }
 
-// ==========================================
-// MEUS EMPRÉSTIMOS
-// ==========================================
 async function carregarMeusEmprestimos() {
-    const { data } = await window.supabaseClient.from('emprestimos').select(`*, livros(titulo)`).eq('devolvido', false).eq('aluno_id', alunoId);
+    // Busca todos, exceto os recusados e devolvidos
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo)`)
+        .eq('aluno_id', alunoId)
+        .in('status', ['pendente', 'ativo']);
+        
     const tbody = document.querySelector('#tabela-emprestimos tbody');
     tbody.innerHTML = '';
     
     if (!data || data.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align:center; color: var(--text-muted); padding: 30px; font-style: italic;">
-                    Você não tem empréstimos ativos no momento. Explore a estante!
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Você não tem empréstimos ou solicitações.</td></tr>`;
         return;
     }
+    
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     
     data.forEach(e => {
-        const dDev = new Date(e.data_devolucao + 'T00:00:00');
-        const isAtraso = dDev < hoje;
+        let statusHtml = '';
+        let acaoHtml = '';
         
+        if (e.status === 'pendente') {
+            statusHtml = `<span class="status-emprestado">⏳ Aguardando Aprovação</span>`;
+            acaoHtml = `<button class="btn-devolver btn-action" style="background:#EF4444;" onclick="cancelarSolicitacao(${e.id}, ${e.livro_id})">Cancelar</button>`;
+        } else if (e.status === 'ativo') {
+            const dDev = new Date(e.data_devolucao + 'T00:00:00');
+            const isAtraso = dDev < hoje;
+            statusHtml = `<span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span>`;
+            acaoHtml = `<button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolverLivroAluno(${e.id}, ${e.livro_id})">Devolver</button>`;
+        }
+
         tbody.innerHTML += `
-            <tr class="${isAtraso ? 'linha-atraso' : ''}">
+            <tr>
                 <td>${e.livros?.titulo}</td>
-                <td>${dDev.toLocaleDateString('pt-BR')}</td>
-                <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
-                <td><button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolverLivroAluno(${e.id}, ${e.livro_id})">Devolver</button></td>
+                <td>${e.status === 'ativo' ? new Date(e.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Aguardando'}</td>
+                <td>${statusHtml}</td>
+                <td>${acaoHtml}</td>
             </tr>
         `;
     });
+}
+
+// NOVA FUNÇÃO: Aluno cancela a solicitação antes de ser aprovada
+async function cancelarSolicitacao(empId, livroId) {
+    if(!confirm("Deseja realmente cancelar esta solicitação?")) return;
+    
+    // Apaga o registro pendente
+    await window.supabaseClient.from('emprestimos').delete().eq('id', empId);
+    // Libera o livro novamente
+    await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
+    
+    alert("Solicitação cancelada.");
+    carregarMeusEmprestimos();
+    carregarEstanteLivros();
 }
 
 async function devolverLivroAluno(empId, livroId) {
