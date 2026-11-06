@@ -22,6 +22,9 @@
                 <button class="nav-link active" onclick="mudarAba('livros', event)">
                     <span>📖</span> Acervo
                 </button>
+                <button class="nav-link" onclick="mudarAba('solicitacoes', event)">
+                    <span>🔔</span> Solicitações
+                </button>
                 <button class="nav-link" onclick="mudarAba('emprestimos', event)">
                     <span>🔄</span> Empréstimos
                 </button>
@@ -92,9 +95,20 @@
                 </table>
             </div>
 
+            <!-- ABA SOLICITAÇÕES -->
+            <div id="aba-solicitacoes" class="tab-content">
+                <h2>Solicitações Pendentes</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Aprove para gerar o prazo de 7 dias, ou recuse para devolver o livro à estante.</p>
+                
+                <table id="tabela-solicitacoes">
+                    <thead><tr><th>Livro</th><th>Aluno</th><th>Data do Pedido</th><th>Ações</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
             <!-- ABA EMPRÉSTIMOS -->
             <div id="aba-emprestimos" class="tab-content">
-                <h2>Registrar Empréstimo</h2>
+                <h2>Registrar Empréstimo Manual</h2>
                 <form id="form-emprestimo">
                     <select id="select-aluno" required><option value="">Selecione o Aluno...</option></select>
                     <select id="select-livro" required><option value="">Selecione um livro...</option></select>
@@ -103,7 +117,7 @@
                 </form>
                 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
-                <h2>Empréstimos Ativos</h2>
+                <h2>Livros Emprestados</h2>
 
                 <div class="search-container">
                     <select id="select-filtro-emprestimos" class="filter-select" onchange="filtrarEmprestimos()">
@@ -170,7 +184,7 @@
                         <option value="todos">Filtrar por...</option>
                         <option value="livro">Livro</option>
                         <option value="aluno">Aluno</option>
-                        <option value="status">Status (Devolvido/Ativo)</option>
+                        <option value="status">Status</option>
                         <option value="data">Data do Empréstimo</option>
                     </select>
                     <input type="text" id="filtro-relatorios" placeholder="Digite o termo de busca..." oninput="filtrarRelatorios()">
@@ -184,7 +198,7 @@
         </main>
     </div>
 
-    <!-- MODAIS (Mantidos no final) -->
+    <!-- MODAIS -->
     <div id="modal-config" class="modal-overlay">
         <div class="modal-box">
             <h2>Meu Perfil</h2>
