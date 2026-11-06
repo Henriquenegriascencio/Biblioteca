@@ -62,17 +62,27 @@ async function carregarSolicitacoes() {
 }
 
 async function aprovarEmprestimo(empId, livroId) {
+    // 1. Calcula a data exata de 7 dias a partir de hoje
     let dataDev = new Date();
     dataDev.setDate(dataDev.getDate() + 7);
     const dataFormatada = dataDev.toISOString().split('T')[0];
 
-    await window.supabaseClient.from('emprestimos')
+    // 2. Atualiza o banco com o status "ativo" e a data calculada
+    const { error } = await window.supabaseClient.from('emprestimos')
         .update({ status: 'ativo', data_devolucao: dataFormatada })
         .eq('id', empId);
     
-    alert("Empréstimo aprovado! O aluno já pode retirar o livro.");
+    if (error) {
+        alert("Erro ao aprovar: " + error.message);
+        return;
+    }
+
+    alert("Empréstimo aprovado por 7 dias! O aluno já pode retirar o livro.");
+    
+    // 3. Atualiza todas as telas para refletir a mudança na hora
     carregarSolicitacoes();
     carregarEmprestimos();
+    carregarRelatorios(); // <--- ESSA LINHA É A MÁGICA QUE FALTAVA
 }
 
 async function recusarEmprestimo(empId, livroId) {
@@ -84,6 +94,7 @@ async function recusarEmprestimo(empId, livroId) {
     alert("Solicitação recusada e livro liberado.");
     carregarSolicitacoes();
     carregarLivros();
+    carregarRelatorios(); // <--- ATUALIZA O RELATÓRIO AQUI TAMBÉM
 }
 
 // ==========================================
@@ -188,16 +199,24 @@ function renderizarRelatorios(lista) {
     
     lista.forEach(e => {
         let statusHtml = '';
+        // Formata a data, se ela existir (evita o erro "Invalid Date")
         let dataPrevista = e.data_devolucao ? new Date(e.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         
-        if (e.status === 'pendente') statusHtml = `<span class="status-emprestado">Pendente</span>`;
-        else if (e.status === 'recusado') statusHtml = `<span class="status-atraso" style="background:#374151; color:white;">Recusado</span>`;
-        else if (e.status === 'ativo') statusHtml = `<span class="status-emprestado">Ativo</span>`;
-        else statusHtml = `<span class="status-disponivel">Devolvido</span>`;
+        // Define o texto e a cor do status baseado no banco de dados
+        if (e.status === 'pendente') {
+            statusHtml = `<span class="status-emprestado">Pendente</span>`;
+        } else if (e.status === 'recusado') {
+            statusHtml = `<span class="status-atraso" style="background:#374151; color:white;">Recusado</span>`;
+        } else if (e.status === 'ativo') {
+            statusHtml = `<span class="status-emprestado">Emprestado</span>`; // <-- MUDANÇA AQUI
+        } else {
+            statusHtml = `<span class="status-disponivel">Devolvido</span>`;
+        }
 
         tbody.innerHTML += `
             <tr>
-                <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${e.livros?.titulo || 'Excluído'}</td>
+                <td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
                 <td>${new Date(e.criado_em).toLocaleDateString('pt-BR')}</td>
                 <td>${dataPrevista}</td>
                 <td>${e.data_devolucao_real ? new Date(e.data_devolucao_real + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
