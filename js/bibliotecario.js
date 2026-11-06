@@ -21,10 +21,11 @@ async function init() {
     document.getElementById('user-nome').innerText = p.nome;
     
     // Carrega todas as tabelas
-    carregarLivros();
-    carregarAlunosSelect();
-    carregarUsuarios();
-    carregarEmprestimos();
+    carregarLivros(); 
+    carregarAlunosSelect(); 
+    carregarUsuarios(); 
+    carregarSolicitacoes(); // NOVO
+    carregarEmprestimos(); 
     carregarRelatorios();
 }
 init();
@@ -177,10 +178,10 @@ document.getElementById('form-usuario')?.addEventListener('submit', async (e) =>
 });
 
 async function carregarEmprestimos() {
-    // Pega tudo que está pendente ou ativo
+    // Agora busca apenas os que já foram APROVADOS
     const { data } = await window.supabaseClient.from('emprestimos')
         .select(`*, livros(titulo), perfis(nome)`)
-        .in('status', ['pendente', 'ativo']);
+        .eq('status', 'ativo');
         
     dadosEmprestimos = data || [];
     renderizarEmprestimos(dadosEmprestimos);
@@ -189,57 +190,31 @@ async function carregarEmprestimos() {
 function renderizarEmprestimos(lista) {
     const tbody = document.querySelector('#tabela-emprestimos tbody');
     tbody.innerHTML = ''; 
+    document.getElementById('total-emprestados').innerText = dadosEmprestimos.length;
     
-    // Contadores do Dashboard
-    let pendentes = lista.filter(e => e.status === 'pendente').length;
-    let ativos = lista.filter(e => e.status === 'ativo').length;
-    
-    document.getElementById('total-emprestados').innerText = ativos;
-    
-    let atrasados = 0; 
-    const hoje = new Date(); hoje.setHours(0,0,0,0);
-    lista.filter(e => e.status === 'ativo').forEach(e => {
-        if (new Date(e.data_devolucao + 'T00:00:00') < hoje) atrasados++;
-    });
+    let atrasados = 0; const hoje = new Date(); hoje.setHours(0,0,0,0);
+    dadosEmprestimos.forEach(e => { if(new Date(e.data_devolucao + 'T00:00:00') < hoje) atrasados++; });
     document.getElementById('total-atrasados').innerText = atrasados;
 
-    if (lista.length === 0) return tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhuma movimentação.</td></tr>`;
+    if (lista.length === 0) return tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhum empréstimo ativo.</td></tr>`;
 
     lista.forEach(e => {
-        const nomeAluno = e.perfis?.nome || e.nome_aluno || '?';
-        const tituloLivro = e.livros?.titulo || 'Excluído';
-        let acoes = '';
-
-        if (e.status === 'pendente') {
-            acoes = `
-                <button class="btn-devolver btn-action" style="background:#10B981;" onclick="aprovarEmprestimo(${e.id}, ${e.livro_id})">Aprovar</button>
-                <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="recusarEmprestimo(${e.id}, ${e.livro_id})">Recusar</button>
-            `;
-            tbody.innerHTML += `
-                <tr style="background: rgba(245, 158, 11, 0.1);">
-                    <td>${tituloLivro}</td><td>${nomeAluno}</td>
-                    <td>-</td>
-                    <td><span class="status-emprestado">⏳ Pendente</span></td>
-                    <td>${acoes}</td>
-                </tr>`;
-        } else {
-            const dDev = new Date(e.data_devolucao + 'T00:00:00');
-            let isAtraso = dDev < hoje;
-            acoes = `<button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button>`;
-            
-            // Adiciona botão de excluir para o admin
-            if (tipoUsuario === 'administrador') {
-                acoes += ` <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="cancelarEmprestimo(${e.id}, ${e.livro_id})">🗑️</button>`;
-            }
-
-            tbody.innerHTML += `
-                <tr class="${isAtraso ? 'linha-atraso' : ''}">
-                    <td>${tituloLivro}</td><td>${nomeAluno}</td>
-                    <td>${dDev.toLocaleDateString('pt-BR')}</td>
-                    <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
-                    <td>${acoes}</td>
-                </tr>`;
+        const dDev = new Date(e.data_devolucao + 'T00:00:00');
+        let isAtraso = dDev < hoje;
+        let acoes = `<button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button>`;
+        
+        // Admin tem botão extra para cancelar
+        if (tipoUsuario === 'administrador') {
+            acoes += ` <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="cancelarEmprestimo(${e.id}, ${e.livro_id})">🗑️</button>`;
         }
+
+        tbody.innerHTML += `
+            <tr class="${isAtraso ? 'linha-atraso' : ''}">
+                <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${dDev.toLocaleDateString('pt-BR')}</td>
+                <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
+                <td>${acoes}</td>
+            </tr>`;
     });
 }
 
@@ -342,6 +317,7 @@ function renderizarRelatorios(lista) {
     
     lista.forEach(e => {
         let statusHtml = '';
+        // A MÁGICA ACONTECE AQUI: Só formata a data se ela não for nula
         let dataPrevista = e.data_devolucao ? new Date(e.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         
         if (e.status === 'pendente') statusHtml = `<span class="status-emprestado">Pendente</span>`;
@@ -379,4 +355,58 @@ function renderizarRelatorios(lista) {
                 <td><span class="${e.devolvido ? 'status-disponivel' : 'status-emprestado'}">${e.devolvido ? 'Devolvido' : 'Ativo'}</span></td>
             </tr>`;
     });
+}
+
+// --- SOLICITAÇÕES PENDENTES ---
+async function carregarSolicitacoes() {
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo), perfis(nome)`)
+        .eq('status', 'pendente');
+    
+    const tbody = document.querySelector('#tabela-solicitacoes tbody');
+    tbody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Nenhuma solicitação pendente no momento.</td></tr>`;
+        return;
+    }
+
+    data.forEach(e => {
+        tbody.innerHTML += `
+            <tr style="background: rgba(245, 158, 11, 0.05);">
+                <td>${e.livros?.titulo || 'Excluído'}</td>
+                <td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${new Date(e.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td>
+                    <button class="btn-devolver btn-action" style="background:#10B981;" onclick="aprovarEmprestimo(${e.id}, ${e.livro_id})">Aprovar</button>
+                    <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="recusarEmprestimo(${e.id}, ${e.livro_id})">Recusar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function aprovarEmprestimo(empId, livroId) {
+    let dataDev = new Date();
+    dataDev.setDate(dataDev.getDate() + 7);
+    const dataFormatada = dataDev.toISOString().split('T')[0];
+
+    await window.supabaseClient.from('emprestimos')
+        .update({ status: 'ativo', data_devolucao: dataFormatada })
+        .eq('id', empId);
+    
+    alert("Empréstimo aprovado! O aluno já pode retirar o livro.");
+    carregarSolicitacoes();
+    carregarEmprestimos();
+}
+
+async function recusarEmprestimo(empId, livroId) {
+    if(!confirm("Recusar esta solicitação? O livro voltará a ficar disponível na estante.")) return;
+    
+    await window.supabaseClient.from('emprestimos').update({ status: 'recusado' }).eq('id', empId);
+    await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
+    
+    alert("Solicitação recusada e livro liberado.");
+    carregarSolicitacoes();
+    carregarLivros();
 }

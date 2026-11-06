@@ -21,7 +21,12 @@ async function init() {
 
     document.getElementById('user-nome').innerText = p.nome;
     
-    carregarLivros(); carregarAlunosSelect(); carregarUsuarios(); carregarEmprestimos(); carregarRelatorios();
+    carregarLivros(); 
+    carregarAlunosSelect(); 
+    carregarUsuarios(); 
+    carregarSolicitacoes(); // NOVO
+    carregarEmprestimos(); 
+    carregarRelatorios();
 }
 init();
 
@@ -222,6 +227,7 @@ function renderizarRelatorios(lista) {
     
     lista.forEach(e => {
         let statusHtml = '';
+        // A MÁGICA ACONTECE AQUI: Só formata a data se ela não for nula
         let dataPrevista = e.data_devolucao ? new Date(e.data_devolucao + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         
         if (e.status === 'pendente') statusHtml = `<span class="status-emprestado">Pendente</span>`;
@@ -264,4 +270,99 @@ function renderizarRelatorios(lista) {
                 <td><span class="${e.devolvido ? 'status-disponivel' : 'status-emprestado'}">${e.devolvido ? 'Devolvido' : 'Ativo'}</span></td>
             </tr>`;
     });
+}
+
+// --- SOLICITAÇÕES PENDENTES ---
+async function carregarSolicitacoes() {
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo), perfis(nome)`)
+        .eq('status', 'pendente');
+    
+    const tbody = document.querySelector('#tabela-solicitacoes tbody');
+    tbody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">Nenhuma solicitação pendente no momento.</td></tr>`;
+        return;
+    }
+
+    data.forEach(e => {
+        tbody.innerHTML += `
+            <tr style="background: rgba(245, 158, 11, 0.05);">
+                <td>${e.livros?.titulo || 'Excluído'}</td>
+                <td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${new Date(e.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td>
+                    <button class="btn-devolver btn-action" style="background:#10B981;" onclick="aprovarEmprestimo(${e.id}, ${e.livro_id})">Aprovar</button>
+                    <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="recusarEmprestimo(${e.id}, ${e.livro_id})">Recusar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function aprovarEmprestimo(empId, livroId) {
+    let dataDev = new Date();
+    dataDev.setDate(dataDev.getDate() + 7);
+    const dataFormatada = dataDev.toISOString().split('T')[0];
+
+    await window.supabaseClient.from('emprestimos')
+        .update({ status: 'ativo', data_devolucao: dataFormatada })
+        .eq('id', empId);
+    
+    alert("Empréstimo aprovado! O aluno já pode retirar o livro.");
+    carregarSolicitacoes();
+    carregarEmprestimos();
+}
+
+async function carregarEmprestimos() {
+    // Agora busca apenas os que já foram APROVADOS
+    const { data } = await window.supabaseClient.from('emprestimos')
+        .select(`*, livros(titulo), perfis(nome)`)
+        .eq('status', 'ativo');
+        
+    dadosEmprestimos = data || [];
+    renderizarEmprestimos(dadosEmprestimos);
+}
+
+function renderizarEmprestimos(lista) {
+    const tbody = document.querySelector('#tabela-emprestimos tbody');
+    tbody.innerHTML = ''; 
+    document.getElementById('total-emprestados').innerText = dadosEmprestimos.length;
+    
+    let atrasados = 0; const hoje = new Date(); hoje.setHours(0,0,0,0);
+    dadosEmprestimos.forEach(e => { if(new Date(e.data_devolucao + 'T00:00:00') < hoje) atrasados++; });
+    document.getElementById('total-atrasados').innerText = atrasados;
+
+    if (lista.length === 0) return tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhum empréstimo ativo.</td></tr>`;
+
+    lista.forEach(e => {
+        const dDev = new Date(e.data_devolucao + 'T00:00:00');
+        let isAtraso = dDev < hoje;
+        let acoes = `<button class="btn-devolver btn-action" style="background:#17a2b8;" onclick="devolver(${e.id}, ${e.livro_id})">Devolver</button>`;
+        
+        // Admin tem botão extra para cancelar
+        if (tipoUsuario === 'administrador') {
+            acoes += ` <button class="btn-action" style="background:#EF4444; padding: 6px 10px; font-size:12px;" onclick="cancelarEmprestimo(${e.id}, ${e.livro_id})">🗑️</button>`;
+        }
+
+        tbody.innerHTML += `
+            <tr class="${isAtraso ? 'linha-atraso' : ''}">
+                <td>${e.livros?.titulo || 'Excluído'}</td><td>${e.perfis?.nome || e.nome_aluno || '?'}</td>
+                <td>${dDev.toLocaleDateString('pt-BR')}</td>
+                <td><span class="${isAtraso ? 'status-atraso' : 'status-disponivel'}">${isAtraso ? 'Atrasado' : 'Em dia'}</span></td>
+                <td>${acoes}</td>
+            </tr>`;
+    });
+}
+
+async function recusarEmprestimo(empId, livroId) {
+    if(!confirm("Recusar esta solicitação? O livro voltará a ficar disponível na estante.")) return;
+    
+    await window.supabaseClient.from('emprestimos').update({ status: 'recusado' }).eq('id', empId);
+    await window.supabaseClient.from('livros').update({ disponivel: true }).eq('id', livroId);
+    
+    alert("Solicitação recusada e livro liberado.");
+    carregarSolicitacoes();
+    carregarLivros();
 }
